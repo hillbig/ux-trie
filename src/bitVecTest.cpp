@@ -5,6 +5,44 @@
 
 using namespace std;
 
+TEST(bitvec, popcount){
+  uint64_t x = 0;
+  for (uint64_t i = 0; i < 64; ++i){
+    ASSERT_EQ(i, BitVec::popCount(x));
+    x |= (1LLU << i);
+  }
+}
+
+TEST(bitvec, selectblock){
+  uint64_t x = 0;
+
+  for (uint64_t i = 0; i < 64; ++i){
+    ASSERT_EQ(i, BitVec::selectBlock(i+1, x, 0));
+  }
+
+  for (uint64_t i = 0; i < 64; ++i){
+    x |= (1LLU << i);
+  }
+
+  for (uint64_t i = 0; i < 64; ++i){
+    ASSERT_EQ(i, BitVec::selectBlock(i+1, x, 1));
+  }
+}
+
+TEST(bitvec, selectoverL){
+  BitVec bv;
+  for (int i = 0; i < 2000; ++i){
+    bv.push_back(1);
+  }
+  bv.build();
+  for (size_t i = 0; i < bv.size(); ++i){
+    uint64_t retPos = 0;
+    uint64_t ret = bv.selectOverL(i+1, 1, retPos);
+    ASSERT_EQ(i / 64, ret);
+  }
+}
+
+
 TEST(bitvec, trivial_zero){
   BitVec bv;
   for (int i = 0; i < 1000; ++i){
@@ -32,6 +70,20 @@ TEST(bitvec, trivial_one){
     ASSERT_EQ(i  , bv.select(i+1, 1));
   }
 }
+
+/*
+TEST(bitvec, trivial_interleave){
+  BitVec bv;
+  for (int i = 0; i < 1000; ++i){
+    bv.push_back((i+1)%2);
+  }
+  bv.build();
+  ASSERT_EQ(1000, bv.size());
+  for (size_t i = 0; i < bv.size(); ++i){
+    ASSERT_EQ(i/2 + 1, bv.rank2(i));
+  }
+}
+*/
 
 
 TEST(bitvec, random){

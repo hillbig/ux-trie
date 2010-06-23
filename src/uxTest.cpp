@@ -19,9 +19,9 @@ TEST(ux, trivial){
 TEST(ux, simple){
   vector<string> wordList;
   wordList.push_back("i");
+  wordList.push_back("we");
   wordList.push_back("in");
   wordList.push_back("to");
-  wordList.push_back("we");
   wordList.push_back("inn");
   wordList.push_back("tea");
   wordList.push_back("ten");
@@ -29,11 +29,11 @@ TEST(ux, simple){
   ux_tool::UX ux;
   ux.build(wordList);
   for (size_t i = 0; i < origWordList.size(); ++i){
-    ASSERT_EQ(origWordList[i], ux.reverseLookup(i));
+    ASSERT_EQ(origWordList[i], ux.decode(i));
   }
 }
 
-TEST(ux, reverseLookup){
+TEST(ux, decode){
   ux_tool::UX ux;
   vector<string> wordList;
   wordList.push_back("tok");
@@ -42,15 +42,15 @@ TEST(ux, reverseLookup){
   wordList.push_back("fukush");
   ux.build(wordList);
 
-  cout <<  ux.reverseLookup(0) << endl;
-  cout <<  ux.reverseLookup(1) << endl;
-  cout <<  ux.reverseLookup(2) << endl;
-  cout <<  ux.reverseLookup(3) << endl;
+  cout <<  ux.decode(0) << endl;
+  cout <<  ux.decode(1) << endl;
+  cout <<  ux.decode(2) << endl;
+  cout <<  ux.decode(3) << endl;
 
-  ASSERT_EQ("tok", ux.reverseLookup(0));  
-  ASSERT_EQ("osak", ux.reverseLookup(1));
-  ASSERT_EQ("okina", ux.reverseLookup(2));
-  ASSERT_EQ("fukush", ux.reverseLookup(3));
+  ASSERT_EQ("fukush", ux.decode(0));  
+  ASSERT_EQ("tok"   , ux.decode(1));
+  ASSERT_EQ("okina" , ux.decode(2));
+  ASSERT_EQ("osak"  , ux.decode(3));
 
 
 }
@@ -68,7 +68,7 @@ TEST(ux, prefixSearch){
   size_t retLen = 0;
   string q1 = "tea";
   ASSERT_NE(ux_tool::NOTFOUND, ux.prefixSearch(q1.c_str(), q1.size(), retLen));
-  ASSERT_EQ(retLen, 3);
+  ASSERT_EQ(3, retLen);
   string q2 = "hoge";
   ASSERT_EQ(ux_tool::NOTFOUND, ux.prefixSearch(q2.c_str(), q2.size(), retLen));
   string q3 = "te";
@@ -90,8 +90,8 @@ TEST(ux, commonPrefixSearch){
   vector<id_t> retIDs;
   string q1 = "beppuhaiiyu";
   ASSERT_EQ(2, ux.commonPrefixSearch(q1.c_str(), q1.size(), retIDs));
-  ASSERT_EQ("bep", ux.reverseLookup(retIDs[0]));
-  ASSERT_EQ("beppu", ux.reverseLookup(retIDs[1]));
+  ASSERT_EQ("bep", ux.decode(retIDs[0]));
+  ASSERT_EQ("beppu", ux.decode(retIDs[1]));
 }
 
 TEST(ux, predictiveSearch){
@@ -107,9 +107,9 @@ TEST(ux, predictiveSearch){
   vector<id_t> retIDs;
   string q1 = "be";
   ASSERT_EQ(3, ux.predictiveSearch(q1.c_str(), q1.size(), retIDs));
-  ASSERT_EQ("bear",  ux.reverseLookup(retIDs[0]));
-  ASSERT_EQ("bep",   ux.reverseLookup(retIDs[1]));
-  ASSERT_EQ("beppu", ux.reverseLookup(retIDs[2]));
+  ASSERT_EQ("bear",  ux.decode(retIDs[0]));
+  ASSERT_EQ("bep",   ux.decode(retIDs[1]));
+  ASSERT_EQ("beppu", ux.decode(retIDs[2]));
 }
 
 
