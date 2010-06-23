@@ -28,9 +28,9 @@ class BitVec{
   enum {
     L_SHIFT = 8,
     L_BLOCK = 1LLU << L_SHIFT,
-    M_SHIFT = 5,
-    M_BLOCK = 1LLU << M_SHIFT,
-    M_RATIO = L_BLOCK/M_BLOCK
+    S_SHIFT = 6,
+    S_BLOCK = 1LLU << S_SHIFT,
+    S_RATIO = L_BLOCK / S_BLOCK
   };
 
 
@@ -40,22 +40,30 @@ public:
 
   void push_back(const uint8_t b);
   void build();
-  uint32_t rank(const uint32_t pos, const uint8_t b) const;
-  uint32_t select(const uint32_t pos, const uint8_t b) const;
-  uint8_t getBit(const uint32_t pos) const;
+  uint64_t rank(const uint64_t pos, const uint8_t b) const;
+  uint64_t select(const uint64_t pos, const uint8_t b) const;
+  uint8_t getBit(const uint64_t pos) const;
   size_t size() const;
   void save(std::ofstream& ofs) const;
   void load(std::ifstream& ifs);
   void print() const;
   size_t getAllocSize() const;
-  
+
+  static uint64_t popCount(uint64_t r);
+  static uint64_t selectBlock(uint64_t pos, uint64_t x, uint8_t b);
+  uint64_t selectOverL(const uint64_t pos, const uint8_t b, uint64_t& retPos) const;
 private:
-  static uint32_t popCount(uint32_t r);
-  static uint32_t getNum(uint32_t oneNum, uint32_t num, uint8_t b);
-  uint32_t size_;
-  std::vector<uint32_t> B;
-  std::vector<uint32_t> L;
-  std::vector<uint8_t>  M;
+  static uint64_t popCountMask(uint64_t x, uint64_t pos);
+  static uint64_t mask(uint64_t x, uint64_t pos);
+  static uint64_t getNum(uint64_t oneNum, uint64_t num, uint8_t b);
+
+
+
+  
+
+  uint64_t size_;
+  std::vector<uint64_t> B;
+  std::vector<uint64_t> L;
 };
 
 #endif // BIT_VEC_HPP__

@@ -18,7 +18,7 @@ void printQuery(const ux_tool::UX& ux,
   if (id == ux_tool::NOTFOUND){
     cout << "not found." << endl;
   } else {
-    cout << ux.reverseLookup(id) << "\t(id=" << id << ")" << endl;
+    cout << ux.decode(id) << "\t(id=" << id << ")" << endl;
   }
 
   vector<id_t> retIDs;  
@@ -26,14 +26,14 @@ void printQuery(const ux_tool::UX& ux,
   ux.commonPrefixSearch(query.c_str(), query.size(), retIDs, limit);
   cout << "commonPrefixSearch: " << retIDs.size() << " found." << endl;
   for (size_t i = 0; i < retIDs.size(); ++i){
-    cout << ux.reverseLookup(retIDs[i]) << "\t(id=" << retIDs[i] << ")" << endl;
+    cout << ux.decode(retIDs[i]) << "\t(id=" << retIDs[i] << ")" << endl;
   }
 
   // predictiveSearch
   ux.predictiveSearch(query.c_str(), query.size(), retIDs, limit);
   cout << "predictiveSearch: " << retIDs.size() << " found." << endl;
   for (size_t i = 0; i < retIDs.size(); ++i){
-    cout << ux.reverseLookup(retIDs[i]) << "\t(id=" << retIDs[i] << ")" << endl;
+    cout << ux.decode(retIDs[i]) << "\t(id=" << retIDs[i] << ")" << endl;
   }
 }
 
@@ -51,16 +51,17 @@ int buildUX(const string& fn, const string& index){
 	word[word.size()-1] == '\r'){
       word = word.substr(0, word.size()-1);
     }
-    if (word == "") continue;
+    
     wordList.push_back(word);
     originalSize += word.size();
   }
   ux_tool::UX ux;
   ux.build(wordList);
-  ux.build2(wordList);
-  cout << "original size:" << originalSize << endl
-       << "allocate size:" << ux.getAllocSize() << " (" << (float)ux.getAllocSize() / originalSize << ")" << endl
-       << "     node num:" << ux.getNodeNum() << endl;
+
+  cout << "original size:\t" << originalSize << endl
+       << "allocate size:\t" << ux.getAllocSize() << " (" << (float)ux.getAllocSize() / originalSize << ")" << endl
+       << "     key  num:\t" << wordList.size() << endl;
+
 
   int err = 0;
   if ((err = ux.save(index.c_str())) != 0){
@@ -103,7 +104,7 @@ int listUX(const string& index){
   cerr << "read:" << ux.getKeyNum() << " keys" << endl;
   
   for (size_t i = 0; i < ux.getKeyNum(); ++i){
-    cout << "[" << ux.reverseLookup(i) << "]" <<  endl;
+    cout << "[" << ux.decode(i) << "]" <<  endl;
   }
   return 0;
 }

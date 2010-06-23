@@ -61,30 +61,34 @@ public:
   size_t predictiveSearch(const char* str, const size_t len, std::vector<id_t>& retIDs, 
 			  const size_t limit = LIMIT_DEFAULT) const;
   
-  void reverseLookup(const id_t id, std::string& ret) const;
-  std::string reverseLookup(const id_t id) const;
+  void decode(const id_t id, std::string& ret) const;
+  std::string decode(const id_t id) const;
   
   size_t getKeyNum() const;
   static std::string what(const int error);
 
   size_t getAllocSize() const;
-  size_t getNodeNum() const;
-
 private:
-  uint32_t getChild(const uint32_t pos, const uint8_t c) const;
-  uint32_t getParent(const uint32_t pos, uint8_t& c) const;
-
+  bool isLeaf(const uint32_t pos) const;
+  void getChild(const uint8_t c, uint32_t& pos, uint32_t& zeros) const;
+  void getParent(uint8_t& c, uint32_t& pos, uint32_t& zeros) const;
+  
   void traverse(const char* str, const size_t len, size_t& retLen, std::vector<id_t>& retIDs, 
 		const size_t limit) const;
 
-  void enumerateAll(const uint32_t pos, std::vector<id_t>& retIDs, const size_t limit) const;
+  void enumerateAll(const uint32_t pos, const uint32_t zeros, std::vector<id_t>& retIDs, const size_t limit) const;
+  bool tailMatch(const char* str, const size_t len, const size_t depth,
+		 const uint32_t tailID) const;
 
   BitVec loud_;
   BitVec terminal_;
+  BitVec tail_;
 
   std::vector<uint8_t> edges_;
+  std::vector<std::string> vtails_;
 
   size_t keyNum_;
+
   bool isReady_;
 };
 
