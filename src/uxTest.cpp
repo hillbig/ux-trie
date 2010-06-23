@@ -42,11 +42,6 @@ TEST(ux, decode){
   wordList.push_back("fukush");
   ux.build(wordList);
 
-  cout <<  ux.decode(0) << endl;
-  cout <<  ux.decode(1) << endl;
-  cout <<  ux.decode(2) << endl;
-  cout <<  ux.decode(3) << endl;
-
   ASSERT_EQ("fukush", ux.decode(0));  
   ASSERT_EQ("tok"   , ux.decode(1));
   ASSERT_EQ("okina" , ux.decode(2));
@@ -75,6 +70,7 @@ TEST(ux, prefixSearch){
   ASSERT_EQ(ux_tool::NOTFOUND, ux.prefixSearch(q3.c_str(), q3.size(), retLen));
   string q4 = "東京都";
   ASSERT_NE(ux_tool::NOTFOUND, ux.prefixSearch(q4.c_str(), q4.size(), retLen));
+  ASSERT_EQ(9, retLen);
 }
 
 TEST(ux, commonPrefixSearch){

@@ -48,10 +48,13 @@ public:
   UX();
   ~UX();
 
-  void build(std::vector<std::string>& wordList);
+  void build(std::vector<std::string>& wordList, const bool isTailUX = true);
   
   int save(const char* indexName) const;
   int load(const char* indexName);
+
+  int save(std::ofstream& ofs) const;
+  int load(std::ifstream& ifs);
   
   id_t prefixSearch(const char* str, const size_t len, size_t& retLen) const;
 
@@ -68,24 +71,34 @@ public:
   static std::string what(const int error);
 
   size_t getAllocSize() const;
+  void allocStat(size_t allocSize) const;
+
 private:
+  void stat(std::vector<std::string>& wordList) const;
+
+
   bool isLeaf(const uint32_t pos) const;
   void getChild(const uint8_t c, uint32_t& pos, uint32_t& zeros) const;
   void getParent(uint8_t& c, uint32_t& pos, uint32_t& zeros) const;
+  void buildTailUX();
   
   void traverse(const char* str, const size_t len, size_t& retLen, std::vector<id_t>& retIDs, 
 		const size_t limit) const;
 
   void enumerateAll(const uint32_t pos, const uint32_t zeros, std::vector<id_t>& retIDs, const size_t limit) const;
   bool tailMatch(const char* str, const size_t len, const size_t depth,
-		 const uint32_t tailID) const;
+		 const uint32_t tailID, size_t& retLen) const;
+  std::string getTail(const uint32_t i) const;
 
   BitVec loud_;
   BitVec terminal_;
   BitVec tail_;
 
-  std::vector<uint8_t> edges_;
   std::vector<std::string> vtails_;
+  UX* vtailux_;
+
+  std::vector<uint8_t> edges_;
+  std::vector<uint32_t> tailIDs_;
 
   size_t keyNum_;
 

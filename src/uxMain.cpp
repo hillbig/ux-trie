@@ -37,7 +37,7 @@ void printQuery(const ux_tool::UX& ux,
   }
 }
 
-int buildUX(const string& fn, const string& index){
+int buildUX(const string& fn, const string& index, const bool tailUX){
   ifstream ifs(fn.c_str());
   if (!ifs){
     cerr << "cannot open " << fn << endl;
@@ -56,8 +56,9 @@ int buildUX(const string& fn, const string& index){
     originalSize += word.size();
   }
   ux_tool::UX ux;
-  ux.build(wordList);
-
+  ux.build(wordList, tailUX);
+  ux.allocStat(ux.getAllocSize());
+   
   cout << "original size:\t" << originalSize << endl
        << "allocate size:\t" << ux.getAllocSize() << " (" << (float)ux.getAllocSize() / originalSize << ")" << endl
        << "     key  num:\t" << wordList.size() << endl;
@@ -115,6 +116,7 @@ int main(int argc, char* argv[]){
   p.add<string>("wordlist", 'w', "word list", false);
   p.add<string>("index",    'i', "index",     true);
   p.add<int>   ("limit",    'l', "limit at search", false, 10);
+  p.add        ("tail",     't', "tail compress by ux");
   p.add        ("enumerate",'e', "enumerate all keyword");
   p.add("help", 'h', "this message");
   p.set_program_name("ux");
@@ -125,7 +127,7 @@ int main(int argc, char* argv[]){
   }
 
   if (p.exist("wordlist")){
-    return buildUX(p.get<string>("wordlist"), p.get<string>("index"));
+    return buildUX(p.get<string>("wordlist"), p.get<string>("index"), p.exist("tail"));
   } else if (p.exist("enumerate")){
     return listUX(p.get<string>("index"));
   } else {
