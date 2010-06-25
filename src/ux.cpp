@@ -23,6 +23,7 @@
 #include <fstream>
 #include <cassert>
 #include <map>
+#include <cmath>
 #include "ux.hpp"
 
 using namespace std;
@@ -71,6 +72,7 @@ void UX::stat(vector<string>& wordList) const {
        << " avgedge:\t" << (float)edges_.size() / keyNum_ << endl
        << "   total:\t" << total << endl
        << "  vtails:\t" << tailslen << endl
+       << " tailnum:\t" << vtails_.size() << endl
        << " avgtail:\t" << (float)tailslen / keyNum_ << endl
        << "totallen:\t" << totalLen << endl
        << "  avelen:\t" << (float)totalLen / keyNum_ << endl
@@ -78,10 +80,20 @@ void UX::stat(vector<string>& wordList) const {
        << endl;
 }
 
+size_t UX::log2(size_t x){
+  size_t ret = 0;
+  while (x >> ret){
+    ret++;
+  }
+  return ret;
+}
+
 void UX::allocStat(size_t allocSize) const{
   if (vtailux_) {
     vtailux_->allocStat(allocSize);
     cout << "--" << endl;
+    float size = tailIDs_.size() * log2(vtailux_->getKeyNum()) / 8;
+    cout << "tailIDs:\t" << size << "\t" << size / allocSize << endl;
   } else {
     size_t tailLenSum = 0;
     for (size_t i = 0; i < vtails_.size(); ++i){
@@ -130,11 +142,11 @@ void UX::build(vector<string>& wordList, const bool isTailUX){
     q.pop();
     nodeNum++;
 
-    if (left + 1 == right){   // tail
+    if (left + 1 == right){ // tail candidate
       loud_.push_back(1);
       terminal_.push_back(1);
       tail_.push_back(1);
-
+      
       string tail;
       for (size_t i = depth; i < wordList[left].size(); ++i){
 	assert(wordList[left].size() > i);
@@ -194,10 +206,16 @@ void UX::build(vector<string>& wordList, const bool isTailUX){
   stat(wordList);
 }
 
+
 void UX::buildTailUX(){
+  map<int, int> counter;
   for (size_t i = 0; i < vtails_.size(); ++i){
+    counter[vtails_[i].size()]++;
     reverse(vtails_[i].begin(), vtails_[i].end());
   } 
+  for (map<int, int>::iterator it = counter.begin(); it != counter.end(); ++it){
+    cout << it->first << "\t" << it->second << "\t" << (float) it->second / vtails_.size() << endl;
+  }
   vector<string> origTails = vtails_;
   vtailux_ = new UX;
   vtailux_->build(vtails_, false);
@@ -497,8 +515,10 @@ std::string UX::what(const int error){
 
 size_t UX::getAllocSize() const{
   size_t retSize = 0;
-  if (vtailux_) retSize += vtailux_->getAllocSize();
-  else {
+  if (vtailux_) {
+    retSize += vtailux_->getAllocSize();
+    retSize += tailIDs_.size() * log2(vtailux_->getKeyNum()) / 8;
+  } else {
     size_t tailLenSum = 0;
     for (size_t i = 0; i < vtails_.size(); ++i){
       tailLenSum += vtails_[i].size();

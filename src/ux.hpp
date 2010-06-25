@@ -74,6 +74,8 @@ public:
   void allocStat(size_t allocSize) const;
 
 private:
+  static size_t log2(size_t x);
+
   void stat(std::vector<std::string>& wordList) const;
 
 
