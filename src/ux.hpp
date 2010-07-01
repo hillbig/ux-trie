@@ -50,10 +50,10 @@ public:
 
   void build(std::vector<std::string>& wordList, const bool isTailUX = true);
   
-  int save(const char* indexName) const;
+  int save(const char* indexName);
   int load(const char* indexName);
 
-  int save(std::ofstream& ofs) const;
+  int save(std::ofstream& ofs);
   int load(std::ifstream& ifs);
   
   id_t prefixSearch(const char* str, const size_t len, size_t& retLen) const;
@@ -72,12 +72,12 @@ public:
 
   size_t getAllocSize() const;
   void allocStat(size_t allocSize) const;
-
-private:
-  static size_t log2(size_t x);
-
   void stat(std::vector<std::string>& wordList) const;
 
+private:
+  static size_t getAlphaSize(std::vector<std::string>& wordList);
+
+  static size_t log2(size_t x);
 
   bool isLeaf(const uint32_t pos) const;
   void getChild(const uint8_t c, uint32_t& pos, uint32_t& zeros) const;
@@ -100,7 +100,8 @@ private:
   UX* vtailux_;
 
   std::vector<uint8_t> edges_;
-  std::vector<uint32_t> tailIDs_;
+  BitVec tailIDs_;
+  size_t tailIDLen_;
 
   size_t keyNum_;
 

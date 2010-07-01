@@ -6,6 +6,17 @@
 
 using namespace std;
 
+#include <time.h>
+#include <sys/time.h>
+#include <stdio.h>
+
+double gettimeofday_sec()
+{
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return tv.tv_sec + (double)tv.tv_usec*1e-6;
+}
+
 void printQuery(const ux_tool::UX& ux,
 		const std::string& query,
 		const int limit){
@@ -56,13 +67,32 @@ int buildUX(const string& fn, const string& index, const bool tailUX){
     originalSize += word.size();
   }
   ux_tool::UX ux;
+  double start = gettimeofday_sec();
   ux.build(wordList, tailUX);
+  double end   = gettimeofday_sec();
   ux.allocStat(ux.getAllocSize());
+  ux.stat(wordList);
    
-  cout << "original size:\t" << originalSize << endl
-       << "allocate size:\t" << ux.getAllocSize() << " (" << (float)ux.getAllocSize() / originalSize << ")" << endl
-       << "     key  num:\t" << wordList.size() << endl;
+  cout << "originalSize:\t" << originalSize << endl
+       << "   indexSize:\t" << ux.getAllocSize() << " (" << (float)ux.getAllocSize() / originalSize << ")" << endl
+       << "      keyNum:\t" << wordList.size() << endl
+       << "  index time:\t" << end - start << endl;
 
+  random_shuffle(wordList.begin(), wordList.end());
+
+  start = gettimeofday_sec();
+  size_t dummy = 0;
+  for (size_t i = 0; i < wordList.size() && i < 1000; ++i){
+    size_t retLen = 0;
+    dummy += ux.prefixSearch(wordList[i].c_str(), wordList[i].size(), retLen);
+  }
+  end   = gettimeofday_sec();
+  cout << "  query time:\t" << end - start << endl; 
+
+  if (dummy == 777){
+    cerr << "luckey" << endl;
+  }
+  
 
   int err = 0;
   if ((err = ux.save(index.c_str())) != 0){
@@ -136,6 +166,3 @@ int main(int argc, char* argv[]){
 
   return 0; // NOT COME 
 }
-
-
-

@@ -19,15 +19,16 @@ TEST(ux, trivial){
 TEST(ux, simple){
   vector<string> wordList;
   wordList.push_back("i");
-  wordList.push_back("we");
   wordList.push_back("in");
   wordList.push_back("to");
+  wordList.push_back("we");
   wordList.push_back("inn");
   wordList.push_back("tea");
   wordList.push_back("ten");
   vector<string> origWordList = wordList;
   ux_tool::UX ux;
   ux.build(wordList);
+
   for (size_t i = 0; i < origWordList.size(); ++i){
     ASSERT_EQ(origWordList[i], ux.decode(i));
   }

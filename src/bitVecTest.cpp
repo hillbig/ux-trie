@@ -29,20 +29,6 @@ TEST(bitvec, selectblock){
   }
 }
 
-TEST(bitvec, selectoverL){
-  BitVec bv;
-  for (int i = 0; i < 2000; ++i){
-    bv.push_back(1);
-  }
-  bv.build();
-  for (size_t i = 0; i < bv.size(); ++i){
-    uint64_t retPos = 0;
-    uint64_t ret = bv.selectOverL(i+1, 1, retPos);
-    ASSERT_EQ(i / 64, ret);
-  }
-}
-
-
 TEST(bitvec, trivial_zero){
   BitVec bv;
   for (int i = 0; i < 1000; ++i){
@@ -110,4 +96,37 @@ TEST(bitvec, random){
     }
   }
 }
+
+TEST(bitvec, vacuum){
+  BitVec bv;
+  vector<int> B;
+  for (int i = 0; i < 100000; ++i){
+    int b = rand() % 2;
+    bv.push_back(b);
+    B.push_back(b);
+  }
+  
+  bv.vacuum();
+}
+
+
+
+TEST(bitvec, multibit){
+  BitVec bv;
+
+  for (uint64_t i = 1; i < 40; ++i){
+    for (uint64_t j = 1; j < (1LLU << i) ; j *= 7){
+      bv.push_back(j, i);
+    }
+  }
+
+  size_t offset = 0;
+  for (uint64_t i = 1; i < 40; ++i){
+    for (uint64_t j = 1; j < (1LLU << i); j *= 7){
+      ASSERT_EQ(j, bv.getBits(offset, i));
+      offset += i;
+    }
+  }
+}
+
 
