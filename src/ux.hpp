@@ -92,9 +92,9 @@ private:
 		 const uint32_t tailID, size_t& retLen) const;
   std::string getTail(const uint32_t i) const;
 
-  BitVec loud_;
-  BitVec terminal_;
-  BitVec tail_;
+  RSDic loud_;
+  RSDic terminal_;
+  RSDic tail_;
 
   std::vector<std::string> vtails_;
   UX* vtailux_;

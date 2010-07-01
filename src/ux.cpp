@@ -132,8 +132,12 @@ void UX::build(vector<string>& wordList, const bool isTailUX){
   }
 
   // super root
-  loud_.push_back(0);
-  loud_.push_back(1);
+
+  BitVec terminalBV;
+  BitVec tailBV;
+  BitVec loudBV;
+  loudBV.push_back(0);
+  loudBV.push_back(1);
 
   size_t nodeNum = 0;
   size_t depth = 0;
@@ -153,10 +157,10 @@ void UX::build(vector<string>& wordList, const bool isTailUX){
 
     if (left + 1 == right &&
 	depth + 1 < wordList[left].size()){ // tail candidate
-      loud_.push_back(1);
-      terminal_.push_back(1);
+      loudBV.push_back(1);
+      terminalBV.push_back(1);
 
-      tail_.push_back(1);
+      tailBV.push_back(1);
       string tail;
       for (size_t i = depth; i < wordList[left].size(); ++i){
 	tail += wordList[left][i];
@@ -164,20 +168,20 @@ void UX::build(vector<string>& wordList, const bool isTailUX){
       vtails_.push_back(tail);
       continue;
     } else {
-      tail_.push_back(0);
+      tailBV.push_back(0);
     }
 
     assert(wordList.size() > left);
     size_t newLeft = left;
     if (depth == wordList[left].size()){
-      terminal_.push_back(1);
+      terminalBV.push_back(1);
       ++newLeft;
       if (newLeft == right){
-	loud_.push_back(1);
+	loudBV.push_back(1);
 	continue;
       }
     } else {
-      terminal_.push_back(0);
+      terminalBV.push_back(0);
     }
 
 
@@ -191,7 +195,7 @@ void UX::build(vector<string>& wordList, const bool isTailUX){
 	continue;
       }
       edges_.push_back(prevC);
-      loud_.push_back(0);
+      loudBV.push_back(0);
       degree++;
       nextQ.push(RangeNode(prev, i));
       if (i == right){
@@ -202,16 +206,16 @@ void UX::build(vector<string>& wordList, const bool isTailUX){
       prevC = wordList[prev][depth];
 
     }
-    loud_.push_back(1);
+    loudBV.push_back(1);
   }
   
   if (isTailUX){
     buildTailUX();
   }
 
-  loud_.build();
-  terminal_.build();
-  tail_.build();
+  loud_.build(loudBV);
+  terminal_.build(terminalBV);
+  tail_.build(tailBV);
 
 
   if (keyNum_ > 0){

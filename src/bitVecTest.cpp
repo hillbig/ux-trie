@@ -8,7 +8,7 @@ using namespace std;
 TEST(bitvec, popcount){
   uint64_t x = 0;
   for (uint64_t i = 0; i < 64; ++i){
-    ASSERT_EQ(i, BitVec::popCount(x));
+    ASSERT_EQ(i, RSDic::popCount(x));
     x |= (1LLU << i);
   }
 }
@@ -17,7 +17,7 @@ TEST(bitvec, selectblock){
   uint64_t x = 0;
 
   for (uint64_t i = 0; i < 64; ++i){
-    ASSERT_EQ(i, BitVec::selectBlock(i+1, x, 0));
+    ASSERT_EQ(i, RSDic::selectBlock(i+1, x, 0));
   }
 
   for (uint64_t i = 0; i < 64; ++i){
@@ -25,7 +25,7 @@ TEST(bitvec, selectblock){
   }
 
   for (uint64_t i = 0; i < 64; ++i){
-    ASSERT_EQ(i, BitVec::selectBlock(i+1, x, 1));
+    ASSERT_EQ(i, RSDic::selectBlock(i+1, x, 1));
   }
 }
 
@@ -34,12 +34,14 @@ TEST(bitvec, trivial_zero){
   for (int i = 0; i < 1000; ++i){
     bv.push_back(0);
   }
-  bv.build();
-  ASSERT_EQ(1000, bv.size());
-  for (size_t i = 0; i < bv.size(); ++i){
+  
+  RSDic rs;
+  rs.build(bv);
+  ASSERT_EQ(1000, rs.size());
+  for (size_t i = 0; i < rs.size(); ++i){
     ASSERT_EQ(0  , bv.getBit(i));
-    ASSERT_EQ(i+1, bv.rank(i, 0));
-    ASSERT_EQ(i  , bv.select(i+1, 0));
+    ASSERT_EQ(i+1, rs.rank(i, 0));
+    ASSERT_EQ(i  , rs.select(i+1, 0));
   }
 }
 
@@ -48,18 +50,20 @@ TEST(bitvec, trivial_one){
   for (int i = 0; i < 1000; ++i){
     bv.push_back(1);
   }
-  bv.build();
-  ASSERT_EQ(1000, bv.size());
-  for (size_t i = 0; i < bv.size(); ++i){
-    ASSERT_EQ(1  , bv.getBit(i));
-    ASSERT_EQ(i+1, bv.rank(i, 1));
-    ASSERT_EQ(i  , bv.select(i+1, 1));
+
+  RSDic rs;
+  rs.build(bv);
+  ASSERT_EQ(1000, rs.size());
+  for (size_t i = 0; i < rs.size(); ++i){
+    ASSERT_EQ(1  , rs.getBit(i));
+    ASSERT_EQ(i+1, rs.rank(i, 1));
+    ASSERT_EQ(i  , rs.select(i+1, 1));
   }
 }
 
 /*
 TEST(bitvec, trivial_interleave){
-  BitVec bv;
+  RSDic bv;
   for (int i = 0; i < 1000; ++i){
     bv.push_back((i+1)%2);
   }
@@ -81,18 +85,19 @@ TEST(bitvec, random){
     B.push_back(b);
   }
   
-  bv.build();
-  ASSERT_EQ(100000, bv.size());
+  RSDic rs;
+  rs.build(bv);
+  ASSERT_EQ(100000, rs.size());
   int sum = 0;
-  for (size_t i = 0; i < bv.size(); ++i){
+  for (size_t i = 0; i < rs.size(); ++i){
     ASSERT_EQ(B[i]  , bv.getBit(i));
     sum += B[i];
     if (B[i]){
-      ASSERT_EQ(sum, bv.rank(i, 1));
-      ASSERT_EQ(i,   bv.select(sum, 1));
+      ASSERT_EQ(sum, rs.rank(i, 1));
+      ASSERT_EQ(i,   rs.select(sum, 1));
     } else {
-      ASSERT_EQ(i - sum + 1, bv.rank(i, 0));
-      ASSERT_EQ(i,           bv.select(i-sum+1, 0));
+      ASSERT_EQ(i - sum + 1, rs.rank(i, 0));
+      ASSERT_EQ(i,           rs.select(i-sum+1, 0));
     }
   }
 }
@@ -106,27 +111,12 @@ TEST(bitvec, vacuum){
     B.push_back(b);
   }
   
-  bv.vacuum();
+  RSDic rs;
+  rs.build(bv);
+  rs.vacuum();
 }
 
 
 
-TEST(bitvec, multibit){
-  BitVec bv;
-
-  for (uint64_t i = 1; i < 40; ++i){
-    for (uint64_t j = 1; j < (1LLU << i) ; j *= 7){
-      bv.push_back(j, i);
-    }
-  }
-
-  size_t offset = 0;
-  for (uint64_t i = 1; i < 40; ++i){
-    for (uint64_t j = 1; j < (1LLU << i); j *= 7){
-      ASSERT_EQ(j, bv.getBits(offset, i));
-      offset += i;
-    }
-  }
-}
 
 
