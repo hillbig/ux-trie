@@ -51,17 +51,74 @@ void BitVec::push_back(const uint8_t b){
   ++size_;
 }
 
-void BitVec::build(){
-  if (B.size() == 0) return; 
+void BitVec::push_back(const uint64_t x, const uint64_t len){
+  size_t offset = size_ % S_BLOCK;
+  if ((size_ + len - 1) / S_BLOCK >= B.size()){
+    B.resize((size_ + len - 1) / S_BLOCK + 1);
+  }
 
-  size_t sum = 0;
-  L.resize(size_ / L_BLOCK + 1);
-  for (uint64_t il = 0; il <= size_; il += L_BLOCK){
-    L[il/L_BLOCK] = sum;
-    for (uint64_t is = 0; is < L_BLOCK && il + is  <= size_; is += S_BLOCK){
-	sum += popCount(B[(il+is)/S_BLOCK]); 
+  B[size_ / S_BLOCK] |= (x << offset);
+  if (offset + len - 1 > S_BLOCK){
+    B[size_ / S_BLOCK + 1] |= (x >> (S_BLOCK - offset));
+  } 
+  size_ += len;
+}
+
+uint64_t BitVec::lg2(const uint64_t x){
+  uint64_t ret = 0;
+  while (x >> ret){
+    ++ret;
+  }
+  return ret;
+}
+
+uint64_t BitVec::buildInternal(const uint64_t leftBlock, const uint64_t rightBlock){
+  uint64_t blockNum = rightBlock - leftBlock;
+  //cout << "leftBlock:" << leftBlock << " rightBlock:" << rightBlock << " blockNum:" << blockNum << " width:" << (1LLU << (lg2(blockNum-1) - 1)) << endl;
+
+  if (blockNum == 1){
+    Node node;
+    node.left = leftBlock;
+    for (uint64_t i = leftBlock * S_RATIO; i < rightBlock * S_RATIO && i < B.size(); ++i){
+      node.ones += popCount(B[i]) ;
+    }
+    node.size = std::min(size_, rightBlock * L_BLOCK) - leftBlock * L_BLOCK;
+    nodes.push_back(node);
+    return nodes.size()-1;
+  } else {
+    nodes.push_back(Node());
+    size_t nodeID = nodes.size()-1;
+
+    uint64_t width   = (1LLU << (lg2(blockNum-1)-1));
+    uint64_t left    = buildInternal(leftBlock,       leftBlock+width);
+    uint64_t right   = buildInternal(leftBlock+width, rightBlock);
+    Node& node       = nodes[nodeID];
+    Node& leftChild  = nodes[left];
+    Node& rightChild = nodes[right];
+    node.left  = left;
+    node.right = right;
+    node.ones  = leftChild.ones + rightChild.ones;
+    node.size  = leftChild.size + rightChild.size;
+
+    return nodeID;
+  }
+}
+
+void BitVec::build(){
+  nodes.clear();
+  if (B.size() == 0) return; 
+  buildInternal(0, (size_ + L_BLOCK - 1) / L_BLOCK);
+
+  /*
+  for (size_t i = 0; i < nodes.size(); ++i){
+    if (nodes[i].isLeaf()){
+      cout << "*" << i << " " << nodes[i].left << endl;
+    }
+    if (!nodes[i].isLeaf()){
+      cout << "i:" << i << " " << nodes[i].size <<  " " << nodes[i].ones << " " << nodes[i].left << " " << nodes[i].right << endl;
     }
   }
+  */
 }
 
 uint64_t BitVec::mask(uint64_t x, uint64_t pos){
@@ -86,18 +143,53 @@ uint64_t BitVec::popCount(uint64_t r) {
   return (uint64_t)(r & 0x7f);
 }
 
-uint64_t BitVec::rank(const uint64_t pos, const uint8_t b) const{
-  uint64_t pos1  = pos+1;
-  uint64_t rank1 = L[pos1 >> L_SHIFT];
-  uint64_t bpos  = (pos1 >> L_SHIFT) << (L_SHIFT - S_SHIFT);
-  uint64_t epos  = pos1 >> S_SHIFT; 
-  for (uint64_t i = bpos; i < epos; ++i){
-    rank1 += popCount(B[i]);
+uint64_t BitVec::rank1(const uint64_t _pos) const{
+  if (nodes.size() == 0) return 0;
+  uint64_t ret    = 0;
+  uint64_t pos    = _pos;
+  for (uint64_t nodeID = 0; ; ){
+    const Node& cur = nodes[nodeID];
+    if (!cur.isLeaf()){
+      const Node& leftChild = nodes[cur.left];
+      if (leftChild.size < pos){
+	ret += leftChild.ones;
+	pos -= leftChild.size;
+	nodeID = cur.right;
+      } else {
+	nodeID = cur.left;
+      }
+    } else {
+      uint64_t bpos = cur.left * S_RATIO;
+      uint64_t epos = bpos + (pos >> S_SHIFT);
+      for (uint64_t i = bpos; i < epos; ++i){
+	ret += popCount(B[i]);
+      }
+      ret += popCountMask(B[epos], pos % S_BLOCK);
+      return ret;
+    }
   }
-  rank1 += popCountMask(B[epos], pos1 % S_BLOCK);
-  
-  if (b == 1) return rank1;
-  else        return pos1 - rank1;
+}
+
+uint64_t BitVec::rank(const uint64_t pos, const uint8_t b) const{
+  uint64_t pos1 = pos+1;
+  uint64_t ones = rank1(pos1);
+  if (b == 1) return ones;
+  else        return pos1 - ones;
+}
+
+uint8_t BitVec::getBit(const uint64_t pos) const{
+  return (B[pos/S_BLOCK] >> (pos % S_BLOCK)) & 1;
+}
+
+uint64_t BitVec::getBits(const uint64_t pos, const uint64_t len) const{
+  uint64_t blockInd1    = pos / S_BLOCK;
+  uint64_t blockOffset1 = pos % S_BLOCK;
+  if (blockOffset1 + len <= S_BLOCK){
+    return mask(B[blockInd1] >> blockOffset1, len);
+  } else {
+    uint64_t blockInd2    = ((pos + len - 1) / S_BLOCK);
+    return  mask((B[blockInd1] >> blockOffset1) + (B[blockInd2] << (S_BLOCK - blockOffset1)), len);
+  }
 }
 
  uint64_t BitVec::getNum(uint64_t oneNum, uint64_t num, uint8_t b){
@@ -105,32 +197,37 @@ uint64_t BitVec::rank(const uint64_t pos, const uint8_t b) const{
    else   return num - oneNum;
  }
 
-uint64_t BitVec::selectOverL(const uint64_t pos, const uint8_t b, uint64_t& retPos) const {
-  uint64_t left   = 0;
-  uint64_t right  = L.size();
-  
-  retPos = pos;
-  while (left < right){
-    uint64_t mid = (left + right)/2;
-    assert(mid < L.size());
-    if (getNum(L[mid], L_BLOCK * mid, b) < retPos) left  = mid+1;
-    else                                           right = mid;
+uint64_t BitVec::select(const uint64_t pos, const uint8_t b) const{
+  uint64_t ret    = 0;
+  uint64_t remain = pos;
+  uint64_t nodeID = 0;
+  for (;;){
+    const Node& cur = nodes[nodeID];
+    if (!cur.isLeaf()){
+      const Node& leftChild = nodes[cur.left];
+      uint64_t val = getNum(leftChild.ones, leftChild.size, b);
+      if (val < remain){
+	ret    += leftChild.size;
+	remain -= val;
+	nodeID = cur.right;
+      } else {
+	nodeID = cur.left;
+      }
+    } else {
+      uint64_t bpos = cur.left * S_RATIO;
+      for (; bpos < B.size(); ++bpos){
+	uint64_t num = getNum(popCount(B[bpos]), S_BLOCK, b);
+	if (remain <= num) break;
+	ret    += S_BLOCK;
+	remain -= num;
+      }
+      ret += selectBlock(remain, B[bpos], b);
+      return ret;
+    }
+
   }
-  uint64_t posL = (left != 0) ? left - 1 : 0;
-
-  uint64_t posS  = posL * S_RATIO;
-
-  assert(retPos >= getNum(L[posL], L_BLOCK * posL, b));
-
-  retPos -= getNum(L[posL], L_BLOCK * posL, b);
-  for (;;posS++){
-    if (posS >= B.size()) break;
-    uint64_t num = getNum(popCount(B[posS]), S_BLOCK, b);
-    if (retPos <= num) break;
-    retPos -= num;
-  }
-  return posS;
 }
+
 
 uint64_t BitVec::selectBlock(uint64_t pos, uint64_t block, uint8_t b) {
   uint64_t ret = 0;
@@ -153,38 +250,49 @@ uint64_t BitVec::selectBlock(uint64_t pos, uint64_t block, uint8_t b) {
   return ret-1;
 }
 
-
-uint64_t BitVec::select(const uint64_t pos, const uint8_t b) const{
-  uint64_t retPos = 0;
-  uint64_t posS   = selectOverL(pos, b, retPos);
-  return posS * S_BLOCK + selectBlock(retPos, B[posS], b);
+void BitVec::vacuumInternal(const uint64_t nodeID, std::vector<uint64_t>& newB, size_t offset) const{
+  const Node& cur = nodes[nodeID];
+  if (cur.isLeaf()){
+    uint64_t bBeginPos = cur.left * L_BLOCK;
+    for (uint64_t i = 0; i < cur.size; ++i){
+      uint64_t b = getBit(bBeginPos + i);
+      if (b){
+	newB[offset/S_BLOCK] |= (1LLU << (offset%S_BLOCK));
+      }
+    }
+  } else {
+    vacuumInternal(cur.left,  newB, offset);
+    offset += nodes[cur.left].size;
+    vacuumInternal(cur.right, newB, offset);
+  }
 }
 
-uint8_t BitVec::getBit(const uint64_t pos) const{
-  return (B[pos/S_BLOCK] >> (pos % S_BLOCK)) & 1;
+void BitVec::vacuum(){
+  if (nodes.size() == 0) return;
+  vector<uint64_t> newB((size_ + S_BLOCK - 1) / S_BLOCK);
+  vacuumInternal(0, newB, 0);
+  B.swap(newB);
+  build();
 }
 
 size_t BitVec::size() const{
   return size_;
 }
 
-void BitVec::save(ofstream& ofs) const{
+void BitVec::save(ofstream& ofs) {
   ofs.write((const char*)&size_, sizeof(size_));
+  vacuum();
   ofs.write((const char*)&B[0],  sizeof(B[0])*B.size());
-  ofs.write((const char*)&L[0],  sizeof(L[0])*L.size());
 }
 
 void BitVec::load(ifstream& ifs) {
   ifs.read((char*)&size_, sizeof(size_));
   B.resize((size_ + S_BLOCK - 1) / S_BLOCK);
-  L.resize(size_ / L_BLOCK + 1);
-
   ifs.read((char*)&B[0],  sizeof(B[0])*B.size());
-  ifs.read((char*)&L[0],  sizeof(L[0])*L.size());
+  build();
 }
 
 size_t BitVec::getAllocSize() const {
   return 
-    B.size() * sizeof(B[0]) +
-    L.size() * sizeof(L[0]);
+    B.size() * sizeof(B[0]) + sizeof(Node) * nodes.size();
 }

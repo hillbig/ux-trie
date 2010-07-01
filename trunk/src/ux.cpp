@@ -30,7 +30,7 @@ using namespace std;
 
 namespace ux_tool{
 
-UX::UX() : vtailux_(NULL), keyNum_(0), isReady_(false) {
+UX::UX() : vtailux_(NULL), tailIDLen_(0), keyNum_(0), isReady_(false) {
 } 
 
 UX::~UX(){
@@ -45,8 +45,6 @@ struct RangeNode{
 };
 
 void UX::stat(vector<string>& wordList) const {
-  size_t total = loud_.size() + terminal_.size() + edges_.size();
-
   size_t tailslen = 0;
   for (size_t i = 0; i < vtails_.size(); ++i){
     tailslen += vtails_[i].size();
@@ -70,7 +68,6 @@ void UX::stat(vector<string>& wordList) const {
        << "terminal:\t" << terminal_.size() << endl
        << "    edge:\t" << edges_.size()    << endl
        << " avgedge:\t" << (float)edges_.size() / keyNum_ << endl
-       << "   total:\t" << total << endl
        << "  vtails:\t" << tailslen << endl
        << " tailnum:\t" << vtails_.size() << endl
        << " avgtail:\t" << (float)tailslen / keyNum_ << endl
@@ -91,9 +88,8 @@ size_t UX::log2(size_t x){
 void UX::allocStat(size_t allocSize) const{
   if (vtailux_) {
     vtailux_->allocStat(allocSize);
-    cout << "--" << endl;
-    float size = tailIDs_.size() * log2(vtailux_->getKeyNum()) / 8;
-    cout << "tailIDs:\t" << size << "\t" << size / allocSize << endl;
+    size_t size = tailIDs_.getAllocSize();
+    cout << "tailIDs:\t" << size << "\t" << (float)size / allocSize << endl;
   } else {
     size_t tailLenSum = 0;
     for (size_t i = 0; i < vtails_.size(); ++i){
@@ -107,8 +103,20 @@ void UX::allocStat(size_t allocSize) const{
   cout << "    tail:\t" << tail_.getAllocSize() << "\t" << (float)tail_.getAllocSize() / allocSize << endl;
   cout << "    edge:\t" << edges_.size() << "\t" << (float)edges_.size() / allocSize << endl;
 }
-
-
+  
+size_t UX::getAlphaSize(std::vector<std::string>& wordList) {
+  vector<int> exist(0x100);
+  for (size_t i = 0; i < wordList.size(); ++i){
+    for (size_t j = 0; j < wordList[i].size(); ++j){
+      exist[(unsigned char)wordList[i][j]] = 1;
+    }
+  }
+  size_t alphaSize = 0;
+  for (size_t i = 0; i < exist.size(); ++i){
+    if (exist[i]) alphaSize++;
+  }
+  return alphaSize;
+}
 
 void UX::build(vector<string>& wordList, const bool isTailUX){
   sort(wordList.begin(), wordList.end());
@@ -142,14 +150,15 @@ void UX::build(vector<string>& wordList, const bool isTailUX){
     q.pop();
     nodeNum++;
 
-    if (left + 1 == right){ // tail candidate
+
+    if (left + 1 == right &&
+	depth + 1 < wordList[left].size()){ // tail candidate
       loud_.push_back(1);
       terminal_.push_back(1);
+
       tail_.push_back(1);
-      
       string tail;
       for (size_t i = depth; i < wordList[left].size(); ++i){
-	assert(wordList[left].size() > i);
 	tail += wordList[left][i];
       }
       vtails_.push_back(tail);
@@ -163,9 +172,14 @@ void UX::build(vector<string>& wordList, const bool isTailUX){
     if (depth == wordList[left].size()){
       terminal_.push_back(1);
       ++newLeft;
+      if (newLeft == right){
+	loud_.push_back(1);
+	continue;
+      }
     } else {
       terminal_.push_back(0);
     }
+
 
     size_t  prev  = newLeft;
     assert(wordList[prev].size() > depth);
@@ -199,36 +213,34 @@ void UX::build(vector<string>& wordList, const bool isTailUX){
   terminal_.build();
   tail_.build();
 
+
   if (keyNum_ > 0){
     isReady_ = true;
   }
 
-  stat(wordList);
+
 }
 
 
 void UX::buildTailUX(){
-  map<int, int> counter;
-  for (size_t i = 0; i < vtails_.size(); ++i){
-    counter[vtails_[i].size()]++;
-    reverse(vtails_[i].begin(), vtails_[i].end());
-  } 
-  for (map<int, int>::iterator it = counter.begin(); it != counter.end(); ++it){
-    cout << it->first << "\t" << it->second << "\t" << (float) it->second / vtails_.size() << endl;
-  }
   vector<string> origTails = vtails_;
   vtailux_ = new UX;
+  for (size_t i = 0; i < vtails_.size(); ++i){
+    reverse(vtails_[i].begin(), vtails_[i].end());
+  }
   vtailux_->build(vtails_, false);
 
-  tailIDs_.resize(origTails.size());
+  tailIDLen_ = log2(vtailux_->getKeyNum());
+
   for (size_t i = 0; i < origTails.size(); ++i){
     size_t retLen = 0;
+    reverse(origTails[i].begin(), origTails[i].end());
     id_t id = vtailux_->prefixSearch(origTails[i].c_str(), origTails[i].size(), retLen);
     assert(id != NOTFOUND);
     assert(retLen == origTails[i].size());
-    tailIDs_[i] = id;
+    tailIDs_.push_back(id, tailIDLen_);
   }
-  //vector<string>().swap(vtails_);
+  vector<string>().swap(vtails_);
 }
 
 void UX::getChild(const uint8_t c, uint32_t& pos, uint32_t& zeros) const {
@@ -367,7 +379,7 @@ bool UX::tailMatch(const char* str, const size_t len, const size_t depth,
 std::string UX::getTail(const uint32_t i) const{
   if (vtailux_) {
     string ret;
-    vtailux_->decode(tailIDs_[i], ret);
+    vtailux_->decode(tailIDs_.getBits(tailIDLen_ * i, tailIDLen_), ret);
     reverse(ret.begin(), ret.end());
     return ret;
   } else {
@@ -405,10 +417,11 @@ size_t UX::getKeyNum() const {
   return keyNum_;
 }
 
-int UX::save(std::ofstream& ofs) const{
+int UX::save(std::ofstream& ofs) {
   loud_.save(ofs);
   terminal_.save(ofs);
   tail_.save(ofs);
+  tailIDs_.save(ofs);
 
   ofs.write((const char*)&keyNum_, sizeof(keyNum_));
   size_t edgesSize = edges_.size();
@@ -422,7 +435,7 @@ int UX::save(std::ofstream& ofs) const{
     if ((err = vtailux_->save(ofs)) != 0){
       return err;
     }
-    ofs.write((const char*)&tailIDs_[0], sizeof(tailIDs_[0]) * tailIDs_.size());
+
   } else {
     size_t tailsNum  = vtails_.size();
     ofs.write((const char*)&tailsNum,  sizeof(tailsNum));
@@ -441,7 +454,7 @@ int UX::save(std::ofstream& ofs) const{
 }
 
  
-int UX::save(const char* fn) const {
+int UX::save(const char* fn) {
   ofstream ofs(fn);
   if (!ofs){
     return FILE_OPEN_ERROR;
@@ -453,6 +466,7 @@ int UX::load(std::ifstream& ifs){
   loud_.load(ifs);
   terminal_.load(ifs);
   tail_.load(ifs);
+  tailIDs_.load(ifs);
 
   ifs.read((char*)&keyNum_, sizeof(keyNum_));
   size_t edgesSize = 0;
@@ -469,8 +483,8 @@ int UX::load(std::ifstream& ifs){
       return err;
     }
     size_t tailNum = vtailux_->getKeyNum();
-    tailIDs_.resize(tailNum);
-    ifs.read((char*)&tailIDs_[0], sizeof(tailIDs_[0]) * tailIDs_.size());
+    tailIDLen_ = log2(tailNum); 
+
   } else {
     size_t tailsNum  = 0;
     ifs.read((char*)&tailsNum,  sizeof(tailsNum));
@@ -517,7 +531,7 @@ size_t UX::getAllocSize() const{
   size_t retSize = 0;
   if (vtailux_) {
     retSize += vtailux_->getAllocSize();
-    retSize += tailIDs_.size() * log2(vtailux_->getKeyNum()) / 8;
+    retSize += tailIDs_.getAllocSize();
   } else {
     size_t tailLenSum = 0;
     for (size_t i = 0; i < vtails_.size(); ++i){
