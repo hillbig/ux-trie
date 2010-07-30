@@ -280,23 +280,23 @@ size_t RSDic::size() const{
 }
 
 
-void BitVec::save(ofstream& ofs) {
-  ofs.write((const char*)&size, sizeof(size));
-  ofs.write((const char*)&B[0],  sizeof(B[0])*B.size());
+void BitVec::save(ostream& os) {
+  os.write((const char*)&size, sizeof(size));
+  os.write((const char*)&B[0],  sizeof(B[0])*B.size());
 }
 
-void RSDic::save(ofstream& ofs) {
+void RSDic::save(ostream& ofs) {
   vacuum();
   B_.save(ofs);
 }
 
-void BitVec::load(ifstream& ifs) {
+void BitVec::load(istream& ifs) {
   ifs.read((char*)&size, sizeof(size));
   B.resize((size + S_BLOCK - 1) / S_BLOCK);
   ifs.read((char*)&B[0],  sizeof(B[0])*B.size());
 }
 
-void RSDic::load(ifstream& ifs) {
+void RSDic::load(istream& ifs) {
   B_.load(ifs);
   build(B_);
 }

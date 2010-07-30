@@ -41,8 +41,8 @@ struct BitVec {
   void setBit(const uint64_t pos, const uint8_t b);
   uint8_t getBit(const uint64_t pos) const;
   uint64_t getBits(const uint64_t pos, const uint64_t len) const;
-  void save(std::ofstream& ofs); // non const because call vacuum
-  void load(std::ifstream& ifs);
+  void save(std::ostream& os); // non const because call vacuum
+  void load(std::istream& is);
 
   void print() const;
   size_t getAllocSize() const;
@@ -75,8 +75,8 @@ public:
   uint64_t rank(const uint64_t pos, const uint8_t b) const;
   uint64_t select(const uint64_t pos, const uint8_t b) const;
 
-  void save(std::ofstream& ofs); // non const because call vacuum
-  void load(std::ifstream& ifs);
+  void save(std::ostream& os); // non const because call vacuum
+  void load(std::istream& is);
   void print() const;
   size_t getAllocSize() const;
 
