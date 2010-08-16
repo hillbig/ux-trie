@@ -17,47 +17,40 @@
  *      software without specific prior written permission.
  */
 
-#ifndef BIT_VEC_HPP__
-#define BIT_VEC_HPP__
+#ifndef RSDIC_HPP__
+#define RSDIC_HPP__
 
 #include <stdint.h>
 #include <vector>
 #include <iostream>
+#include "bitVec.hpp"
 #include "uxUtil.hpp"
 
 namespace ux_tool {
 
-static const uint64_t L_SHIFT = 9;
-static const uint64_t L_BLOCK = 1LLU << L_SHIFT;
-static const uint64_t S_SHIFT = 6;
-static const uint64_t S_BLOCK = 1LLU << S_SHIFT;
-static const uint64_t S_RATIO = L_BLOCK / S_BLOCK;
-
-class BitVec {
+class RSDic {
 public:
-  BitVec();
-  ~BitVec();
+  RSDic();
+  ~RSDic();
 
-  void push_back(const uint8_t b);
-  void push_back_with_len(const uint64_t x, const uint64_t len);
+  void build(BitVec& bv);
+  uint64_t rank(uint64_t pos, uint8_t b) const;
+  uint64_t select(uint64_t pos, uint8_t b) const;
 
-  void setBit(const uint64_t pos, const uint8_t b);
-  uint8_t getBit(const uint64_t pos) const;
-  uint64_t getBits(const uint64_t pos, const uint64_t len) const;
   void save(std::ostream& os) const;
   void load(std::istream& is);
-  size_t size() const;
-  void print() const;
   size_t getAllocSize() const;
-  uint64_t lookupBlock(const size_t ind) const;
+  uint8_t getBit(uint64_t pos) const;
+  size_t size() const;
 
 private:
+  uint64_t selectOverL(uint64_t pos, uint8_t b, uint64_t& retPos) const;
+  
+  BitVec bitVec_;
+  std::vector<uint64_t> L_;
   size_t size_;
-  std::vector<uint64_t> B_;
 };
 
 }
 
-
-
-#endif // BIT_VEC_HPP__
+#endif // RSDIC_HPP__

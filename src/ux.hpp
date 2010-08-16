@@ -22,9 +22,9 @@
 
 #include <string>
 #include <vector>
-#include <sstream>
 #include <stdint.h>
 #include "bitVec.hpp"
+#include "rsDic.hpp"
 
 namespace ux_tool{
 
@@ -41,13 +41,6 @@ enum {
  */
 class UX{
 public:
-  enum {
-    FILE_OPEN_ERROR  = 1,
-    FILE_WRITE_ERROR = 2,
-    FILE_READ_ERROR  = 3,
-    SAVE_ERROR       = 4,
-    LOAD_ERROR       = 5
-  };
 
 public:
   /**
@@ -72,7 +65,7 @@ public:
    * @param indexName The file name
    * @return 0 on success, -1 on failure
    */
-  int save(const char* indexName);
+  int save(const char* indexName) const;
 
   /**
    * Load the dicitonary from a file
@@ -86,7 +79,7 @@ public:
    * @param os The ostream as an output 
    * @return 0 on success, -1 on failure
    */
-  int save(std::ostream& os);
+  int save(std::ostream& os) const;
 
   /**
    * Load the dictionary from istream
@@ -162,30 +155,29 @@ public:
   /*
    * Report the statistics of the memory allocation
    * @param allocSize The initial overhead size
+   * @param os The output distination
    */
-  void allocStat(size_t allocSize) const;
+  void allocStat(size_t allocSize, std::ostream& os) const;
 
   /*
-   * Report the dicionary for the wordList
-   * @param wordList The word list to be examined
+   * Report the internal statistics 
+   * @param os The output distination
    */
-  void stat(std::vector<std::string>& wordList) const;
+  void stat(std::ostream& os) const;
+
 
 private:
-  static size_t log2(size_t x);
-
-  bool isLeaf(const uint32_t pos) const;
-  void getChild(const uint8_t c, uint32_t& pos, uint32_t& zeros) const;
-  void getParent(uint8_t& c, uint32_t& pos, uint32_t& zeros) const;
   void buildTailUX();
-  
+  bool isLeaf(uint32_t pos) const;
+  void getChild(uint8_t c, uint32_t& pos, uint32_t& zeros) const;
+  void getParent(uint8_t& c, uint32_t& pos, uint32_t& zeros) const;
   void traverse(const char* str, size_t len, size_t& retLen, std::vector<id_t>& retIDs, 
 		size_t limit) const;
 
-  void enumerateAll(const uint32_t pos, const uint32_t zeros, std::vector<id_t>& retIDs, size_t limit) const;
+  void enumerateAll(uint32_t pos, uint32_t zeros, std::vector<id_t>& retIDs, size_t limit) const;
   bool tailMatch(const char* str, size_t len, size_t depth,
-		 const uint32_t tailID, size_t& retLen) const;
-  std::string getTail(const uint32_t i) const;
+		 uint32_t tailID, size_t& retLen) const;
+  std::string getTail(uint32_t i) const;
 
   RSDic loud_;
   RSDic terminal_;
@@ -193,14 +185,24 @@ private:
 
   std::vector<std::string> vtails_;
   UX* vtailux_;
-
   std::vector<uint8_t> edges_;
   BitVec tailIDs_;
   size_t tailIDLen_;
-
   size_t keyNum_;
-
   bool isReady_;
+
+public:
+  /** 
+   * Error code.
+   */
+  enum {
+    FILE_OPEN_ERROR  = 1,
+    FILE_WRITE_ERROR = 2,
+    FILE_READ_ERROR  = 3,
+    SAVE_ERROR       = 4,
+    LOAD_ERROR       = 5
+  };
+
 };
 
 }
