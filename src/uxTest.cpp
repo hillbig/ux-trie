@@ -1,3 +1,22 @@
+/* 
+ *  Copyright (c) 2010 Daisuke Okanohara
+  * 
+ *   Redistribution and use in source and binary forms, with or without
+ *   modification, are permitted provided that the following conditions
+ *   are met:
+ * 
+ *   1. Redistributions of source code must retain the above Copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *
+ *   2. Redistributions in binary form must reproduce the above Copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *
+ *   3. Neither the name of the authors nor the names of its contributors
+ *      may be used to endorse or promote products derived from this
+ *      software without specific prior written permission.
+ */
+
 #include <gtest/gtest.h>
 #include <vector>
 #include <string>
@@ -30,11 +49,11 @@ TEST(ux, simple){
   ux.build(wordList);
 
   for (size_t i = 0; i < origWordList.size(); ++i){
-    ASSERT_EQ(origWordList[i], ux.decode(i));
+    ASSERT_EQ(origWordList[i], ux.decodeKey(i));
   }
 }
 
-TEST(ux, decode){
+TEST(ux, decodeKey){
   ux_tool::UX ux;
   vector<string> wordList;
   wordList.push_back("tok");
@@ -43,10 +62,10 @@ TEST(ux, decode){
   wordList.push_back("fukush");
   ux.build(wordList);
 
-  ASSERT_EQ("fukush", ux.decode(0));  
-  ASSERT_EQ("tok"   , ux.decode(1));
-  ASSERT_EQ("okina" , ux.decode(2));
-  ASSERT_EQ("osak"  , ux.decode(3));
+  ASSERT_EQ("fukush", ux.decodeKey(0));  
+  ASSERT_EQ("tok"   , ux.decodeKey(1));
+  ASSERT_EQ("okina" , ux.decodeKey(2));
+  ASSERT_EQ("osak"  , ux.decodeKey(3));
 
 
 }
@@ -87,8 +106,8 @@ TEST(ux, commonPrefixSearch){
   vector<id_t> retIDs;
   string q1 = "beppuhaiiyu";
   ASSERT_EQ(2, ux.commonPrefixSearch(q1.c_str(), q1.size(), retIDs));
-  ASSERT_EQ("bep", ux.decode(retIDs[0]));
-  ASSERT_EQ("beppu", ux.decode(retIDs[1]));
+  ASSERT_EQ("bep", ux.decodeKey(retIDs[0]));
+  ASSERT_EQ("beppu", ux.decodeKey(retIDs[1]));
 }
 
 TEST(ux, predictiveSearch){
@@ -104,9 +123,9 @@ TEST(ux, predictiveSearch){
   vector<id_t> retIDs;
   string q1 = "be";
   ASSERT_EQ(3, ux.predictiveSearch(q1.c_str(), q1.size(), retIDs));
-  ASSERT_EQ("bear",  ux.decode(retIDs[0]));
-  ASSERT_EQ("bep",   ux.decode(retIDs[1]));
-  ASSERT_EQ("beppu", ux.decode(retIDs[2]));
+  ASSERT_EQ("bear",  ux.decodeKey(retIDs[0]));
+  ASSERT_EQ("bep",   ux.decodeKey(retIDs[1]));
+  ASSERT_EQ("beppu", ux.decodeKey(retIDs[2]));
 }
 
 
@@ -132,7 +151,7 @@ TEST(ux, save){
   ASSERT_EQ(0, ux2.load(fn));
   ASSERT_EQ(0, remove(fn));
 
-  ASSERT_EQ(ux.getKeyNum(), ux2.getKeyNum());
+  ASSERT_EQ(ux.size(), ux2.size());
 
   size_t retLen = 0;
   ASSERT_NE(ux_tool::NOTFOUND, ux2.prefixSearch(q1.c_str(), q1.size(), retLen));
@@ -157,7 +176,7 @@ TEST(ux, large){
     size_t retLen = 0;
     dic[ux.prefixSearch(wordList[i].c_str(), wordList[i].size(), retLen)]++;
   }
-  ASSERT_EQ(dic.size(), ux.getKeyNum());
+  ASSERT_EQ(dic.size(), ux.size());
 }
 
 

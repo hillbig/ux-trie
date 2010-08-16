@@ -54,11 +54,11 @@ public:
   ~UX();
 
   /**
-   * Build a dictionary from wordList
-   * @param wordList input word list
+   * Build a dictionary from keyList
+   * @param keyList input key list
    * @param isTailUX use tail compression. 
    */
-  void build(std::vector<std::string>& wordList, bool isTailUX = true);
+  void build(std::vector<std::string>& keyList, bool isTailUX = true);
   
   /**
    * Save the dictionary in a file
@@ -89,55 +89,55 @@ public:
   int load(std::istream& is);
 
   /**
-   * Return the longest word that matches the prefix of the query in the dictionary
+   * Return the longest key that matches the prefix of the query in the dictionary
    * @param str the query
    * @param len the length of the query
-   * @param retLen The length of the matched word in the dictionary 
-   * @return The ID of the matched word or NOTFOUND if no word is matched
+   * @param retLen The length of the matched key in the dictionary 
+   * @return The ID of the matched key or NOTFOUND if no key is matched
    */
   id_t prefixSearch(const char* str, size_t len, size_t& retLen) const;
 
   /** 
-   * Return the all words that match the prefix of the query in the dictionary
+   * Return the all keys that match the prefix of the query in the dictionary
    * @param str the query
    * @param len the length of the query
-   * @param retIDs The IDs of the matched words
-   * @param limit The maximum number of matched words
-   * @return The number of matched words
+   * @param retIDs The IDs of the matched keys
+   * @param limit The maximum number of matched keys
+   * @return The number of matched keys
    */
   size_t commonPrefixSearch(const char* str, size_t len, std::vector<id_t>& retIDs, 
 			    size_t limit = LIMIT_DEFAULT) const;
 
   /** 
-   * Return the all words whose their prefixes  match the query 
+   * Return the all keys whose their prefixes  match the query 
    * @param str the query
    * @param len the length of the query
-   * @param The IDs of the matched words
-   * @param limit The maximum number of matched words
-   * @return The number of matched words
+   * @param The IDs of the matched keys
+   * @param limit The maximum number of matched keys
+   * @return The number of matched keys
    */
   size_t predictiveSearch(const char* str, size_t len, std::vector<id_t>& retIDs, 
 			  size_t limit = LIMIT_DEFAULT) const;
   
   /**
-   * Return the word for the given ID
-   * @param id The ID of the word
-   * @param ret The word for the given ID or empty if such ID does not exist
+   * Return the key for the given ID
+   * @param id The ID of the key
+   * @param ret The key for the given ID or empty if such ID does not exist
    */ 
-  void decode(const id_t id, std::string& ret) const;
+  void decodeKey(const id_t id, std::string& ret) const;
 
   /**
-   * Return the word for the given ID
-   * @param id The ID of the word
-   * @return The word for the given ID or empty if such ID does not exist
+   * Return the key for the given ID
+   * @param id The ID of the key
+   * @return The key for the given ID or empty if such ID does not exist
    */ 
-  std::string decode(const id_t id) const;
+  std::string decodeKey(const id_t id) const;
   
   /**
-   * Return the number of words in the dictionary
-   * @return the number of words in the dictionary
+   * Return the number of keys in the dictionary
+   * @return the number of keys in the dictionary
    */
-  size_t getKeyNum() const;
+  size_t size() const;
 
   /**
    * Report the error message for the error ID

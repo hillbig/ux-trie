@@ -44,11 +44,11 @@ UX::~UX(){
   delete vtailux_;
 }
   
-void UX::build(vector<string>& wordList, const bool isTailUX){
-  sort(wordList.begin(), wordList.end());
-  wordList.erase(unique(wordList.begin(), wordList.end()), wordList.end());
+void UX::build(vector<string>& keyList, const bool isTailUX){
+  sort(keyList.begin(), keyList.end());
+  keyList.erase(unique(keyList.begin(), keyList.end()), keyList.end());
   
-  keyNum_ = wordList.size();
+  keyNum_ = keyList.size();
   
   queue<RangeNode> q;
   queue<RangeNode> nextQ;
@@ -73,7 +73,7 @@ void UX::build(vector<string>& wordList, const bool isTailUX){
     const size_t right = rn.right;
     q.pop();
     
-    string& cur = wordList[left];
+    string& cur = keyList[left];
     if (left + 1 == right &&
 	depth + 1 < cur.size()){ // tail candidate
       loudBV.push_back(1);
@@ -89,7 +89,7 @@ void UX::build(vector<string>& wordList, const bool isTailUX){
       tailBV.push_back(0);
     }
     
-    assert(wordList.size() > left);
+    assert(keyList.size() > left);
     size_t newLeft = left;
     if (depth == cur.size()){
       terminalBV.push_back(1);
@@ -103,12 +103,12 @@ void UX::build(vector<string>& wordList, const bool isTailUX){
     }
     
     size_t  prev  = newLeft;
-    assert(wordList[prev].size() > depth);
-    uint8_t prevC = (uint8_t)wordList[prev][depth];
+    assert(keyList[prev].size() > depth);
+    uint8_t prevC = (uint8_t)keyList[prev][depth];
     uint32_t degree = 0;
     for (size_t i = prev+1; ; ++i){
       if (i < right && 
-	  prevC == (uint8_t)wordList[i][depth]){
+	  prevC == (uint8_t)keyList[i][depth]){
 	continue;
       }
       edges_.push_back(prevC);
@@ -119,8 +119,8 @@ void UX::build(vector<string>& wordList, const bool isTailUX){
 	break;
       }
       prev  = i;
-      assert(wordList[prev].size() > depth);
-      prevC = wordList[prev][depth];
+      assert(keyList[prev].size() > depth);
+      prevC = keyList[prev][depth];
       
     }
     loudBV.push_back(1);
@@ -209,7 +209,7 @@ int UX::load(std::istream& is){
     if ((err = vtailux_->load(is)) != 0){
       return err;
     }
-    size_t tailNum = vtailux_->getKeyNum();
+    size_t tailNum = vtailux_->size();
     tailIDLen_ = log2(tailNum); 
     
   } else {
@@ -272,7 +272,7 @@ size_t UX::predictiveSearch(const char* str, const size_t len, vector<id_t>& ret
   return retIDs.size();
 }
 
-void UX::decode(const id_t id, string& ret) const{
+void UX::decodeKey(const id_t id, string& ret) const{
   ret.clear();
   if (!isReady_) return;
   
@@ -292,13 +292,13 @@ void UX::decode(const id_t id, string& ret) const{
   }
 }
   
-string UX::decode(const id_t id) const {
+string UX::decodeKey(const id_t id) const {
   std::string ret;
-  decode(id, ret);
+  decodeKey(id, ret);
   return ret;
 }
   
-size_t UX::getKeyNum() const {
+size_t UX::size() const {
   return keyNum_;
 }
   
@@ -382,7 +382,7 @@ void UX::buildTailUX(){
     reverse(vtails_[i].begin(), vtails_[i].end());
   }
   vtailux_->build(vtails_, false);
-  tailIDLen_ = log2(vtailux_->getKeyNum());
+  tailIDLen_ = log2(vtailux_->size());
   
   for (size_t i = 0; i < origTails.size(); ++i){
     size_t retLen = 0;
@@ -489,7 +489,7 @@ bool UX::tailMatch(const char* str, const size_t len, const size_t depth,
 std::string UX::getTail(const uint32_t i) const{
   if (vtailux_) {
     string ret;
-    vtailux_->decode(tailIDs_.getBits(tailIDLen_ * i, tailIDLen_), ret);
+    vtailux_->decodeKey(tailIDs_.getBits(tailIDLen_ * i, tailIDLen_), ret);
     reverse(ret.begin(), ret.end());
     return ret;
   } else {
