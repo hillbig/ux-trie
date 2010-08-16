@@ -17,6 +17,18 @@ double gettimeofday_sec()
   return tv.tv_sec + (double)tv.tv_usec*1e-6;
 }
 
+void analyzeWordList(const vector<string>& wordList){
+  size_t lcs = 0;
+  for (size_t i = 1; i < wordList.size(); ++i){
+    const string& s1 = wordList[i-1];
+    const string& s2 = wordList[i];
+    size_t j = 0;
+    for (; j < s1.size() && j < s2.size() && s1[j] == s2[j]; ++j) {};
+    lcs += j;
+  }
+  cout << "  avelcs:\t" << (float)lcs / wordList.size() << endl;
+}
+
 void printQuery(const ux_tool::UX& ux,
 		const std::string& query,
 		const int limit){
@@ -48,7 +60,7 @@ void printQuery(const ux_tool::UX& ux,
   }
 }
 
-int buildUX(const string& fn, const string& index, const bool tailUX){
+int buildUX(const string& fn, const string& index, const bool uncompress){
   ifstream ifs(fn.c_str());
   if (!ifs){
     cerr << "cannot open " << fn << endl;
@@ -68,10 +80,11 @@ int buildUX(const string& fn, const string& index, const bool tailUX){
   }
   ux_tool::UX ux;
   double start = gettimeofday_sec();
-  ux.build(wordList, tailUX);
+  ux.build(wordList, !uncompress);
   double end   = gettimeofday_sec();
-  ux.allocStat(ux.getAllocSize());
-  ux.stat(wordList);
+  ux.allocStat(ux.getAllocSize(), cout);
+  ux.stat(cout);
+  analyzeWordList(wordList);
    
   cout << "originalSize:\t" << originalSize << endl
        << "   indexSize:\t" << ux.getAllocSize() << " (" << (float)ux.getAllocSize() / originalSize << ")" << endl
@@ -143,11 +156,11 @@ int listUX(const string& index){
 
 int main(int argc, char* argv[]){
   cmdline::parser p;
-  p.add<string>("wordlist", 'w', "word list", false);
-  p.add<string>("index",    'i', "index",     true);
-  p.add<int>   ("limit",    'l', "limit at search", false, 10);
-  p.add        ("tail",     't', "tail compress by ux");
-  p.add        ("enumerate",'e', "enumerate all keyword");
+  p.add<string>("wordlist",   'w', "word list", false);
+  p.add<string>("index",      'i', "index",     true);
+  p.add<int>   ("limit",      'l', "limit at search", false, 10);
+  p.add        ("uncompress", 'u', "tail is uncompressed");
+  p.add        ("enumerate",  'e', "enumerate all keyword");
   p.add("help", 'h', "this message");
   p.set_program_name("ux");
 
@@ -157,7 +170,7 @@ int main(int argc, char* argv[]){
   }
 
   if (p.exist("wordlist")){
-    return buildUX(p.get<string>("wordlist"), p.get<string>("index"), p.exist("tail"));
+    return buildUX(p.get<string>("wordlist"), p.get<string>("index"), p.exist("uncompress"));
   } else if (p.exist("enumerate")){
     return listUX(p.get<string>("index"));
   } else {

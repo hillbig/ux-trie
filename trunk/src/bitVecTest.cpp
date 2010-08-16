@@ -2,13 +2,16 @@
 #include <vector>
 #include <string>
 #include "bitVec.hpp"
+#include "rsDic.hpp"
+#include "uxUtil.hpp"
 
 using namespace std;
+using namespace ux_tool;
 
 TEST(bitvec, popcount){
   uint64_t x = 0;
   for (uint64_t i = 0; i < 64; ++i){
-    ASSERT_EQ(i, RSDic::popCount(x));
+    ASSERT_EQ(i, popCount(x));
     x |= (1LLU << i);
   }
 }
@@ -17,7 +20,7 @@ TEST(bitvec, selectblock){
   uint64_t x = 0;
 
   for (uint64_t i = 0; i < 64; ++i){
-    ASSERT_EQ(i, RSDic::selectBlock(i+1, x, 0));
+    ASSERT_EQ(i, selectBlock(i+1, x, 0));
   }
 
   for (uint64_t i = 0; i < 64; ++i){
@@ -25,7 +28,7 @@ TEST(bitvec, selectblock){
   }
 
   for (uint64_t i = 0; i < 64; ++i){
-    ASSERT_EQ(i, RSDic::selectBlock(i+1, x, 1));
+    ASSERT_EQ(i, selectBlock(i+1, x, 1));
   }
 }
 
@@ -113,7 +116,6 @@ TEST(bitvec, vacuum){
   
   RSDic rs;
   rs.build(bv);
-  rs.vacuum();
 }
 
 
