@@ -41,7 +41,7 @@ void printQuery(const ux_tool::UX& ux,
   if (id == ux_tool::NOTFOUND){
     cout << "not found." << endl;
   } else {
-    cout << ux.decode(id) << "\t(id=" << id << ")" << endl;
+    cout << ux.decodeKey(id) << "\t(id=" << id << ")" << endl;
   }
 
   vector<id_t> retIDs;  
@@ -49,14 +49,14 @@ void printQuery(const ux_tool::UX& ux,
   ux.commonPrefixSearch(query.c_str(), query.size(), retIDs, limit);
   cout << "commonPrefixSearch: " << retIDs.size() << " found." << endl;
   for (size_t i = 0; i < retIDs.size(); ++i){
-    cout << ux.decode(retIDs[i]) << "\t(id=" << retIDs[i] << ")" << endl;
+    cout << ux.decodeKey(retIDs[i]) << "\t(id=" << retIDs[i] << ")" << endl;
   }
 
   // predictiveSearch
   ux.predictiveSearch(query.c_str(), query.size(), retIDs, limit);
   cout << "predictiveSearch: " << retIDs.size() << " found." << endl;
   for (size_t i = 0; i < retIDs.size(); ++i){
-    cout << ux.decode(retIDs[i]) << "\t(id=" << retIDs[i] << ")" << endl;
+    cout << ux.decodeKey(retIDs[i]) << "\t(id=" << retIDs[i] << ")" << endl;
   }
 }
 
@@ -123,7 +123,7 @@ int searchUX(const string& index, const int limit){
     cerr << ux.what(err) << " " << index << endl;
     return -1;
   }
-  cout << "read:" << ux.getKeyNum() << " keys" << endl;
+  cout << "read:" << ux.size() << " keys" << endl;
   
   string query;
   for (;;){
@@ -145,10 +145,10 @@ int listUX(const string& index){
     cerr << ux.what(err) << " " << index << endl;
     return -1;
   }
-  cerr << "read:" << ux.getKeyNum() << " keys" << endl;
+  cerr << "read:" << ux.size() << " keys" << endl;
   
-  for (size_t i = 0; i < ux.getKeyNum(); ++i){
-    cout << "[" << ux.decode(i) << "]" <<  endl;
+  for (size_t i = 0; i < ux.size(); ++i){
+    cout << "[" << ux.decodeKey(i) << "]" <<  endl;
   }
   return 0;
 }

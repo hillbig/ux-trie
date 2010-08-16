@@ -1,4 +1,4 @@
-VERSION= '0.0.1'
+VERSION= '0.0.3'
 APPNAME= 'ux'
 
 srcdir= '.'
@@ -16,13 +16,13 @@ def configure(ctx):
 def build(bld):
   bld(
        features     = 'cxx cshlib',
-       source       = 'ux.cpp bitVec.cpp rsDic.cpp uxUtil.cpp',
+       source       = 'ux.cpp bitVec.cpp rsDic.cpp uxUtil.cpp uxMap.cpp',
        name         = 'ux',
        target       = 'ux',
        includes     = '.')
   bld(
        features     = 'cxx cstaticlib',
-       source       = 'ux.cpp bitVec.cpp rsDic.cpp uxUtil.cpp',
+       source       = 'ux.cpp bitVec.cpp rsDic.cpp uxUtil.cpp uxMap.cpp',
        name         = 'ux',
        target       = 'ux',
        includes     = '.')
@@ -46,4 +46,13 @@ def build(bld):
        uselib_local = 'ux' ,
        uselib       = '',
        includes     = '.')
+
+  bld(
+       features     = 'cxx cprogram gtest',
+       source       = 'uxMapTest.cpp',
+       target       = 'uxmap_test',
+       uselib_local = 'ux' ,
+       uselib       = '',
+       includes     = '.')
+
   bld.install_files('${PREFIX}/include/ux', bld.path.ant_glob('*.hpp'))
