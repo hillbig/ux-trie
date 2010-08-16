@@ -103,7 +103,7 @@ TEST(ux, commonPrefixSearch){
   wordList.push_back("beppu");
   ux.build(wordList);
 
-  vector<id_t> retIDs;
+  vector<ux_tool::id_t> retIDs;
   string q1 = "beppuhaiiyu";
   ASSERT_EQ(2, ux.commonPrefixSearch(q1.c_str(), q1.size(), retIDs));
   ASSERT_EQ("bep", ux.decodeKey(retIDs[0]));
@@ -120,7 +120,7 @@ TEST(ux, predictiveSearch){
   wordList.push_back("beppu");
   ux.build(wordList);
 
-  vector<id_t> retIDs;
+  vector<ux_tool::id_t> retIDs;
   string q1 = "be";
   ASSERT_EQ(3, ux.predictiveSearch(q1.c_str(), q1.size(), retIDs));
   ASSERT_EQ("bear",  ux.decodeKey(retIDs[0]));

@@ -44,16 +44,16 @@ void printQuery(const ux_tool::UX& ux,
     cout << ux.decodeKey(id) << "\t(id=" << id << ")" << endl;
   }
 
-  vector<id_t> retIDs;  
+  vector<ux_tool::id_t> retIDs;  
   // commonPrefixSearch
-  ux.commonPrefixSearch(query.c_str(), query.size(), retIDs, limit);
+  ux.commonPrefixSearch(query.c_str(), query.size(), retIDs, (size_t)limit);
   cout << "commonPrefixSearch: " << retIDs.size() << " found." << endl;
   for (size_t i = 0; i < retIDs.size(); ++i){
     cout << ux.decodeKey(retIDs[i]) << "\t(id=" << retIDs[i] << ")" << endl;
   }
 
   // predictiveSearch
-  ux.predictiveSearch(query.c_str(), query.size(), retIDs, limit);
+  ux.predictiveSearch(query.c_str(), query.size(), retIDs, (size_t)limit);
   cout << "predictiveSearch: " << retIDs.size() << " found." << endl;
   for (size_t i = 0; i < retIDs.size(); ++i){
     cout << ux.decodeKey(retIDs[i]) << "\t(id=" << retIDs[i] << ")" << endl;

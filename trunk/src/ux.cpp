@@ -105,7 +105,7 @@ void UX::build(vector<string>& keyList, const bool isTailUX){
     size_t  prev  = newLeft;
     assert(keyList[prev].size() > depth);
     uint8_t prevC = (uint8_t)keyList[prev][depth];
-    uint32_t degree = 0;
+    uint64_t degree = 0;
     for (size_t i = prev+1; ; ++i){
       if (i < right && 
 	  prevC == (uint8_t)keyList[i][depth]){
@@ -254,10 +254,10 @@ size_t UX::predictiveSearch(const char* str, const size_t len, vector<id_t>& ret
   if (!isReady_) return 0;
   if (limit == 0) return 0;
   
-  uint32_t lastPos   = 0;
-  uint32_t lastZeros = 0;
-  uint32_t pos       = 2;
-  uint32_t zeros     = 2;
+  uint64_t lastPos   = 0;
+  uint64_t lastZeros = 0;
+  uint64_t pos       = 2;
+  uint64_t zeros     = 2;
   for (size_t i = 0; i < len; ++i){
     lastPos   = pos;
     lastZeros = zeros;
@@ -276,10 +276,10 @@ void UX::decodeKey(const id_t id, string& ret) const{
   ret.clear();
   if (!isReady_) return;
   
-  uint32_t nodeID = terminal_.select(id+1, 1);
+  uint64_t nodeID = terminal_.select(id+1, 1);
   
-  uint32_t pos    = loud_.select(nodeID+1, 1) + 1;
-  uint32_t zeros  = pos - nodeID;
+  uint64_t pos    = loud_.select(nodeID+1, 1) + 1;
+  uint64_t zeros  = pos - nodeID;
   for (;;) { 
     uint8_t c = 0;
     getParent(c, pos, zeros);
@@ -395,7 +395,7 @@ void UX::buildTailUX(){
   vector<string>().swap(vtails_);
 }
 
-void UX::getChild(const uint8_t c, uint32_t& pos, uint32_t& zeros) const {
+void UX::getChild(const uint8_t c, uint64_t& pos, uint64_t& zeros) const {
   for (;; ++pos, ++zeros){
     if (loud_.getBit(pos)){
       pos = NOTFOUND;
@@ -411,11 +411,11 @@ void UX::getChild(const uint8_t c, uint32_t& pos, uint32_t& zeros) const {
   }
 }
 
-bool UX::isLeaf(const uint32_t pos) const {
+bool UX::isLeaf(const uint64_t pos) const {
   return loud_.getBit(pos);
 }
   
-void UX::getParent(uint8_t& c, uint32_t& pos, uint32_t& zeros) const {
+void UX::getParent(uint8_t& c, uint64_t& pos, uint64_t& zeros) const {
   zeros = pos - zeros + 1;
   pos   = loud_.select(zeros, 0);
   if (zeros < 2) return;
@@ -430,10 +430,10 @@ void UX::traverse(const char* str, const size_t len,
   if (!isReady_) return;
   if (limit == 0) return;
   
-  uint32_t pos   = 2;
-  uint32_t zeros = 2;
+  uint64_t pos   = 2;
+  uint64_t zeros = 2;
   for (size_t depth = 0; pos != NOTFOUND; ++depth){
-    uint32_t ones = pos - zeros;
+    uint64_t ones = pos - zeros;
     
     if (tail_.getBit(ones)){
       size_t retLen = 0;
@@ -455,15 +455,15 @@ void UX::traverse(const char* str, const size_t len,
 }
   
 
-void UX::enumerateAll(const uint32_t pos, const uint32_t zeros, vector<id_t>& retIDs, const size_t limit) const{
-  const uint32_t ones = pos - zeros;
+void UX::enumerateAll(const uint64_t pos, const uint64_t zeros, vector<id_t>& retIDs, const size_t limit) const{
+  const uint64_t ones = pos - zeros;
   if (terminal_.getBit(ones)){
     retIDs.push_back(terminal_.rank(ones, 1) - 1);
   }
   
-  for (uint32_t i = 0; loud_.getBit(pos + i) == 0 &&
+  for (uint64_t i = 0; loud_.getBit(pos + i) == 0 &&
 	 retIDs.size() < limit; ++i){
-    uint32_t nextPos = loud_.select(zeros + i, 1)+1;
+    uint64_t nextPos = loud_.select(zeros + i, 1)+1;
     enumerateAll(nextPos, nextPos - zeros - i + 1,  retIDs, limit);
   }
 }
@@ -471,7 +471,7 @@ void UX::enumerateAll(const uint32_t pos, const uint32_t zeros, vector<id_t>& re
 
 
 bool UX::tailMatch(const char* str, const size_t len, const size_t depth,
-		   const uint32_t tailID, size_t& retLen) const{
+		   const uint64_t tailID, size_t& retLen) const{
   string tail = getTail(tailID);
   if (tail.size() > len-depth) {
     return false;
@@ -486,7 +486,7 @@ bool UX::tailMatch(const char* str, const size_t len, const size_t depth,
   return true;
 }
   
-std::string UX::getTail(const uint32_t i) const{
+std::string UX::getTail(const uint64_t i) const{
   if (vtailux_) {
     string ret;
     vtailux_->decodeKey(tailIDs_.getBits(tailIDLen_ * i, tailIDLen_), ret);

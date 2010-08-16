@@ -28,7 +28,7 @@
 
 namespace ux_tool{
 
-typedef uint32_t id_t;
+typedef uint64_t id_t;
 
 enum {
   NOTFOUND      = 0xFFFFFFFFU,
@@ -40,8 +40,6 @@ enum {
  * Succinct Trie Data structure
  */
 class UX{
-public:
-
 public:
   /**
    * Constructor
@@ -124,14 +122,14 @@ public:
    * @param id The ID of the key
    * @param ret The key for the given ID or empty if such ID does not exist
    */ 
-  void decodeKey(const id_t id, std::string& ret) const;
+  void decodeKey(id_t id, std::string& ret) const;
 
   /**
    * Return the key for the given ID
    * @param id The ID of the key
    * @return The key for the given ID or empty if such ID does not exist
    */ 
-  std::string decodeKey(const id_t id) const;
+  std::string decodeKey(id_t id) const;
   
   /**
    * Return the number of keys in the dictionary
@@ -144,7 +142,7 @@ public:
    * @param error The error ID
    * @return The error message
    */
-  static std::string what(const int error);
+  static std::string what(int error);
   
   /*
    * Get the allocated memory size
@@ -168,16 +166,16 @@ public:
 
 private:
   void buildTailUX();
-  bool isLeaf(uint32_t pos) const;
-  void getChild(uint8_t c, uint32_t& pos, uint32_t& zeros) const;
-  void getParent(uint8_t& c, uint32_t& pos, uint32_t& zeros) const;
+  bool isLeaf(uint64_t pos) const;
+  void getChild(uint8_t c, uint64_t& pos, uint64_t& zeros) const;
+  void getParent(uint8_t& c, uint64_t& pos, uint64_t& zeros) const;
   void traverse(const char* str, size_t len, size_t& retLen, std::vector<id_t>& retIDs, 
 		size_t limit) const;
 
-  void enumerateAll(uint32_t pos, uint32_t zeros, std::vector<id_t>& retIDs, size_t limit) const;
+  void enumerateAll(uint64_t pos, uint64_t zeros, std::vector<id_t>& retIDs, size_t limit) const;
   bool tailMatch(const char* str, size_t len, size_t depth,
-		 uint32_t tailID, size_t& retLen) const;
-  std::string getTail(uint32_t i) const;
+		 uint64_t tailID, size_t& retLen) const;
+  std::string getTail(uint64_t i) const;
 
   RSDic loud_;
   RSDic terminal_;

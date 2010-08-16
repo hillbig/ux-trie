@@ -92,7 +92,7 @@ size_t BitVec::size() const {
 }
 
 void BitVec::print() const {
-  for (uint32_t i = 0; i < size_; ++i){
+  for (size_t i = 0; i < size_; ++i){
     if (getBit(i)) cout << "1";
     else           cout << "0";
     if ((i+1)%8 == 0){

@@ -57,13 +57,14 @@ TEST(uxmap, simple){
   uxm.build(wordList);
 
   for (size_t i = 0; i < origWordList.size(); ++i){
-    ASSERT_EQ(0, uxm.set(origWordList[i], valueList[i]));
+    string key = origWordList[i];
+    ASSERT_EQ(0, uxm.set(key.c_str(), key.size(), valueList[i]));
   }
-
       
   for (size_t i = 0; i < origWordList.size(); ++i){
+    string key = origWordList[i];
     int ret = -1;
-    ASSERT_EQ(0, uxm.get(origWordList[i], ret));
+    ASSERT_EQ(0, uxm.get(key.c_str(), key.size(), ret));
     ASSERT_EQ(valueList[i], ret);
   }
 }
@@ -83,7 +84,29 @@ TEST(uxmap, pair){
 
   for (size_t i = 0; i < kvs.size(); ++i){
     int ret = -1;
-    ASSERT_EQ(0, uxm.get(kvs[i].first, ret));
+    string key = kvs[i].first;
+    ASSERT_EQ(0, uxm.get(key.c_str(), key.size(), ret));
     ASSERT_EQ(kvs[i].second, ret);
+  }
+}
+
+TEST(uxmap, map){
+  map<string, int> kvs;
+  kvs[string("i")] = 1;
+  kvs[string("in")] = 2;
+  kvs[string("to")] = 3;
+  kvs[string("we")] = 4;
+  kvs[string("inn")] = 5;
+  kvs[string("tea")] = 6;
+  kvs[string("ten")] = 7;
+  
+  ux_tool::UXMap<int> uxm;
+  uxm.build(kvs);
+  for (map<string, int>::const_iterator it = kvs.begin();
+       it != kvs.end(); ++it){
+    string key = it->first;
+    int ret = -1;
+    ASSERT_EQ(0, uxm.get(key.c_str(), key.size(), ret));
+    ASSERT_EQ(it->second, ret);
   }
 }
