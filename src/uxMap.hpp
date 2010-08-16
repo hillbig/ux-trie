@@ -40,7 +40,6 @@ public:
    */
   UXMap() : size_(0){}
 
-
   /**
    * Destructor
    */
@@ -69,7 +68,8 @@ public:
     vs_.resize(wordList.size());
     for (typename std::map<std::string, V>::const_iterator it = 
 	   m.begin(); it != m.end(); ++it){
-      if (set(it->first, it->second) != 0){
+      const std::string key = it->first;
+      if (set(key.c_str(), key.size(), it->second) != 0){
 	return;
       }
     }
@@ -89,19 +89,21 @@ public:
     vs_.resize(wordList.size());
 
     for (size_t i = 0; i < kvs.size(); ++i){
-      assert(set(kvs[i].first, kvs[i].second) == 0);
+      const std::string key = kvs[i].first;
+      assert(set(key.c_str(), key.size(), kvs[i].second) == 0);
     }
   }
 
   /**
    * Get a value for a given key
-   * @param key A key to be associated
+   * @param str the key
+   * @param len the length of str
    * @param v An associated value for a key
    * @return 0 on success and -1 if not found
    */
-  int get(const std::string& key, V& v) const {
+  int get(const char* str, size_t len, V& v) const {
     size_t retLen = 0;
-    id_t id = ux_.prefixSearch(key.c_str(), key.size(), retLen);
+    id_t id = ux_.prefixSearch(str, len, retLen);
     if (id == NOTFOUND){
       return -1;
     } 
@@ -111,13 +113,14 @@ public:
 
   /**
    * Set a value for a given key
-   * @param key A key to be associated
+   * @param str the key
+   * @param len the length of str
    * @param v  A value to be associated for a key
    * @return 0 on success and -1 if not found
    */
-  int set(const std::string& key, const V& v){
+  int set(const char* str, size_t len, const V& v){
     size_t retLen = 0;
-    id_t id = ux_.prefixSearch(key.c_str(), key.size(), retLen);
+    id_t id = ux_.prefixSearch(str, len, retLen);
     if (id == NOTFOUND){
       return -1;
     }
@@ -130,7 +133,8 @@ public:
    * @param str the query
    * @param len the length of the query
    * @param retLen The length of the matched key in the dictionary 
-   * @return The ID of the matched key or NOTFOUND if no key is matched
+   * @param v The associated value for the key
+   * @return 0 if found and -1 if not found
    */
   int prefixSearch(const char* str, size_t len, size_t& retLen, V& v) const {
     id_t id = ux_.prefixSearch(str, len, retLen);
@@ -141,41 +145,41 @@ public:
   }
 
   /** 
-   * Return the all keys that match the prefix of the query in the dictionary
+   * Return the all associated values that match the prefix of the query in the dictionary
    * @param str the query
    * @param len the length of the query
-   * @param retIDs The IDs of the matched keys
+   * @param vs The returned values associated for the input key
    * @param limit The maximum number of matched keys
    * @return The number of matched keys
    */
-  size_t commonPrefixSearch(const char* str, size_t len, std::vector<V>& v, size_t limit = LIMIT_DEFAULT) const {
-    v.clear();
+  size_t commonPrefixSearch(const char* str, size_t len, std::vector<V>& vs, size_t limit = LIMIT_DEFAULT) const {
+    vs.clear();
     std::vector<id_t> retIDs;
     commonPrefixSearch(str, len, retIDs, limit);
-    v.resize(retIDs.size());
+    vs.resize(retIDs.size());
     for (size_t i = 0; i < retIDs.size(); ++i){
-      v[i] = vs_[retIDs[i]];
+      vs[i] = vs_[retIDs[i]];
     }
-    return v.size();
+    return vs.size();
   }
 
   /** 
    * Return the all keys whose their prefixes  match the query 
    * @param str the query
    * @param len the length of the query
-   * @param The IDs of the matched keys
+   * @param vs The associated values for the input key
    * @param limit The maximum number of matched keys
    * @return The number of matched keys
    */
-  size_t predictiveSearch(const char* str, size_t len, std::vector<V>& v, size_t limit = LIMIT_DEFAULT) const {
-    v.clear();
+  size_t predictiveSearch(const char* str, size_t len, std::vector<V>& vs, size_t limit = LIMIT_DEFAULT) const {
+    vs.clear();
     std::vector<id_t> retIDs;
     predictiveSearch(str, len, retIDs, limit);
-    v.resize(retIDs.size());
+    vs.resize(retIDs.size());
     for (size_t i = 0; i < retIDs.size(); ++i){
-      v[i] = vs_[retIDs[i]];
+      vs[i] = vs_[retIDs[i]];
     }
-    return v.size();
+    return vs.size();
   }
 
   /**
