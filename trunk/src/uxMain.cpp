@@ -29,6 +29,25 @@ void analyzeWordList(const vector<string>& wordList){
   cout << "  avelcs:\t" << (float)lcs / wordList.size() << endl;
 }
 
+
+size_t allKeySize(const vector<string>& keyList){
+  size_t ret = 0;
+  for (size_t i = 0; i < keyList.size(); ++i){
+    ret += keyList[i].size();
+  }
+  return ret;
+}
+
+void reportStat(const ux_tool::UX& ux, const vector<string>& keyList){
+  ux.allocStat(ux.getAllocSize(), cout);
+  ux.stat(cout);
+  analyzeWordList(keyList);
+  size_t originalSize = allKeySize(keyList);
+  cout << "originalSize:\t" << allKeySize(keyList) << endl
+       << "   indexSize:\t" << ux.getAllocSize() << " (" << (float)ux.getAllocSize() / originalSize << ")" << endl
+       << "      keyNum:\t" << keyList.size() << endl;
+}
+
 void printQuery(const ux_tool::UX& ux,
 		const std::string& query,
 		const int limit){
@@ -60,61 +79,66 @@ void printQuery(const ux_tool::UX& ux,
   }
 }
 
-int buildUX(const string& fn, const string& index, const bool uncompress){
+
+int readKeyList(const string& fn, vector<string>& keyList){
   ifstream ifs(fn.c_str());
   if (!ifs){
     cerr << "cannot open " << fn << endl;
     return -1;
   }
-  vector<string> wordList;
-  string word;
-  size_t originalSize = 0;
-  while (getline(ifs, word)){
+
+  for (string word; getline(ifs, word); ){
     if (word.size() > 0 &&
 	word[word.size()-1] == '\r'){
       word = word.substr(0, word.size()-1);
     }
-    
-    wordList.push_back(word);
-    originalSize += word.size();
+    keyList.push_back(word);
   }
-  ux_tool::UX ux;
+  return 0;
+} 
+
+void performanceTest(ux_tool::UX& ux, vector<string>& keyList){
+  random_shuffle(keyList.begin(), keyList.end());
+  
   double start = gettimeofday_sec();
-  ux.build(wordList, !uncompress);
-  double end   = gettimeofday_sec();
-  ux.allocStat(ux.getAllocSize(), cout);
-  ux.stat(cout);
-  analyzeWordList(wordList);
-   
-  cout << "originalSize:\t" << originalSize << endl
-       << "   indexSize:\t" << ux.getAllocSize() << " (" << (float)ux.getAllocSize() / originalSize << ")" << endl
-       << "      keyNum:\t" << wordList.size() << endl
-       << "  index time:\t" << end - start << endl;
-
-  random_shuffle(wordList.begin(), wordList.end());
-
-  start = gettimeofday_sec();
   size_t dummy = 0;
-  for (size_t i = 0; i < wordList.size() && i < 1000; ++i){
+  for (size_t i = 0; i < keyList.size() && i < 1000; ++i){
     size_t retLen = 0;
-    dummy += ux.prefixSearch(wordList[i].c_str(), wordList[i].size(), retLen);
+    dummy += ux.prefixSearch(keyList[i].c_str(), keyList[i].size(), retLen);
   }
-  end   = gettimeofday_sec();
+  double end   = gettimeofday_sec();
   cout << "  query time:\t" << end - start << endl; 
-
+  
   if (dummy == 777){
     cerr << "luckey" << endl;
   }
-  
+}
 
-  int err = 0;
-  if ((err = ux.save(index.c_str())) != 0){
+int buildUX(const string& fn, const string& index, const bool uncompress, const int verbose){
+  vector<string> keyList;
+  if (readKeyList(fn, keyList) == -1){
+    return -1;
+  }
+  ux_tool::UX ux;
+  double start = gettimeofday_sec();
+  ux.build(keyList, !uncompress);
+  double elapsedTime = gettimeofday_sec() - start;
+  if (verbose >= 1){
+    cout << "  index time:\t" << elapsedTime << endl;
+    reportStat(ux, keyList);
+  }
+  if (verbose >= 2){
+    performanceTest(ux, keyList);
+  }
+
+  if (index == "") return 0;
+  int err = ux.save(index.c_str());
+  if (err != 0){
     cerr << ux.what(err) << " " << index << endl;
     return -1;
   }
   return 0;
 }
-
 
 int searchUX(const string& index, const int limit){
   ux_tool::UX ux;
@@ -161,6 +185,7 @@ int main(int argc, char* argv[]){
   p.add<int>   ("limit",      'l', "limit at search", false, 10);
   p.add        ("uncompress", 'u', "tail is uncompressed");
   p.add        ("enumerate",  'e', "enumerate all keyword");
+  p.add<int>   ("verbose",    'v', "verbose mode", 0);
   p.add("help", 'h', "this message");
   p.set_program_name("ux");
 
@@ -170,7 +195,7 @@ int main(int argc, char* argv[]){
   }
 
   if (p.exist("wordlist")){
-    return buildUX(p.get<string>("wordlist"), p.get<string>("index"), p.exist("uncompress"));
+    return buildUX(p.get<string>("wordlist"), p.get<string>("index"), p.exist("uncompress"), p.get<int>("verbose"));
   } else if (p.exist("enumerate")){
     return listUX(p.get<string>("index"));
   } else {
