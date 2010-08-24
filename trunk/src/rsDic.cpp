@@ -23,7 +23,7 @@
 
 using namespace std;
 
-namespace ux_tool{
+namespace ux {
 
 RSDic::RSDic() : size_(0) {
 }
@@ -110,6 +110,12 @@ uint8_t RSDic::getBit(const uint64_t pos) const{
 
 size_t RSDic::size() const {
   return bitVec_.size();
+}
+
+void RSDic::clear() {
+  bitVec_.clear();
+  L_.clear();
+  size_ = 0;
 }
 
 }

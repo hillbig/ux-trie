@@ -23,7 +23,7 @@
 
 using namespace std;
 
-namespace ux_tool{
+namespace ux {
 
 BitVec::BitVec() : size_(0){
 }
@@ -89,6 +89,11 @@ void BitVec::load(istream& ifs) {
 
 size_t BitVec::size() const {
   return size_;
+}
+
+void BitVec::clear() {
+  B_.clear();
+  size_ = 0;
 }
 
 void BitVec::print() const {

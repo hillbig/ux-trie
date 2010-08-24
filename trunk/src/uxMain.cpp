@@ -2,7 +2,7 @@
 #include <fstream>
 #include <string>
 #include "cmdline.h"
-#include "ux.hpp"
+#include "uxTrie.hpp"
 
 using namespace std;
 
@@ -38,7 +38,7 @@ size_t allKeySize(const vector<string>& keyList){
   return ret;
 }
 
-void reportStat(const ux_tool::UX& ux, const vector<string>& keyList){
+void reportStat(const ux::Trie& ux, const vector<string>& keyList){
   ux.allocStat(ux.getAllocSize(), cout);
   ux.stat(cout);
   analyzeWordList(keyList);
@@ -48,7 +48,7 @@ void reportStat(const ux_tool::UX& ux, const vector<string>& keyList){
        << "      keyNum:\t" << keyList.size() << endl;
 }
 
-void printQuery(const ux_tool::UX& ux,
+void printQuery(const ux::Trie& ux,
 		const std::string& query,
 		const int limit){
   cout << "query:[" << query << "]" << endl;
@@ -56,14 +56,14 @@ void printQuery(const ux_tool::UX& ux,
   // prefixSearch
   size_t retLen = 0;
   cout << "prefixSearch: ";
-  ux_tool::id_t id = ux.prefixSearch(query.c_str(), query.size(), retLen);
-  if (id == ux_tool::NOTFOUND){
+  ux::id_t id = ux.prefixSearch(query.c_str(), query.size(), retLen);
+  if (id == ux::NOTFOUND){
     cout << "not found." << endl;
   } else {
     cout << ux.decodeKey(id) << "\t(id=" << id << ")" << endl;
   }
 
-  vector<ux_tool::id_t> retIDs;  
+  vector<ux::id_t> retIDs;  
   // commonPrefixSearch
   ux.commonPrefixSearch(query.c_str(), query.size(), retIDs, (size_t)limit);
   cout << "commonPrefixSearch: " << retIDs.size() << " found." << endl;
@@ -97,7 +97,7 @@ int readKeyList(const string& fn, vector<string>& keyList){
   return 0;
 } 
 
-void performanceTest(ux_tool::UX& ux, vector<string>& keyList){
+void performanceTest(ux::Trie& ux, vector<string>& keyList){
   random_shuffle(keyList.begin(), keyList.end());
   
   double start = gettimeofday_sec();
@@ -119,7 +119,7 @@ int buildUX(const string& fn, const string& index, const bool uncompress, const 
   if (readKeyList(fn, keyList) == -1){
     return -1;
   }
-  ux_tool::UX ux;
+  ux::Trie ux;
   double start = gettimeofday_sec();
   ux.build(keyList, !uncompress);
   double elapsedTime = gettimeofday_sec() - start;
@@ -141,7 +141,7 @@ int buildUX(const string& fn, const string& index, const bool uncompress, const 
 }
 
 int searchUX(const string& index, const int limit){
-  ux_tool::UX ux;
+  ux::Trie ux;
   int err = 0;
   if ((err = ux.load(index.c_str())) != 0){
     cerr << ux.what(err) << " " << index << endl;
@@ -163,7 +163,7 @@ int searchUX(const string& index, const int limit){
 }
 
 int listUX(const string& index){
-  ux_tool::UX ux;
+  ux::Trie ux;
   int err = 0;
   if ((err = ux.load(index.c_str())) != 0){
     cerr << ux.what(err) << " " << index << endl;

@@ -25,7 +25,7 @@
 #include "uxUtil.hpp"
 
 using namespace std;
-using namespace ux_tool;
+using namespace ux;
 
 TEST(bitvec, popcount){
   uint64_t x = 0;

@@ -26,7 +26,7 @@
 #include "bitVec.hpp"
 #include "uxUtil.hpp"
 
-namespace ux_tool {
+namespace ux {
 
 class RSDic {
 public:
@@ -42,6 +42,7 @@ public:
   size_t getAllocSize() const;
   uint8_t getBit(uint64_t pos) const;
   size_t size() const;
+  void clear();
 
 private:
   uint64_t selectOverL(uint64_t pos, uint8_t b, uint64_t& retPos) const;

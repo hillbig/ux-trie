@@ -25,7 +25,7 @@
 using namespace std;
 
 TEST(uxmap, trivial){
-  ux_tool::UXMap<int> uxm;
+  ux::Map<int> uxm;
   
   vector<string> wordList;
   vector<int> valueList; 
@@ -53,7 +53,7 @@ TEST(uxmap, simple){
   valueList.push_back(7);
 
   vector<string> origWordList = wordList;
-  ux_tool::UXMap<int> uxm;
+  ux::Map<int> uxm;
   uxm.build(wordList);
 
   for (size_t i = 0; i < origWordList.size(); ++i){
@@ -79,7 +79,7 @@ TEST(uxmap, pair){
   kvs.push_back(make_pair("tea", 6));
   kvs.push_back(make_pair("ten", 7));
   
-  ux_tool::UXMap<int> uxm;
+  ux::Map<int> uxm;
   uxm.build(kvs);
 
   for (size_t i = 0; i < kvs.size(); ++i){
@@ -100,7 +100,7 @@ TEST(uxmap, map){
   kvs[string("tea")] = 6;
   kvs[string("ten")] = 7;
   
-  ux_tool::UXMap<int> uxm;
+  ux::Map<int> uxm;
   uxm.build(kvs);
   for (map<string, int>::const_iterator it = kvs.begin();
        it != kvs.end(); ++it){

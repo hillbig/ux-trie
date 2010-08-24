@@ -22,7 +22,7 @@
 
 #include <stdint.h>
 
-namespace ux_tool{
+namespace ux {
   uint64_t lg2(uint64_t x);
   uint64_t mask(uint64_t x, uint64_t pos);
   uint64_t popCount(uint64_t r);

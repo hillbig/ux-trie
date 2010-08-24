@@ -26,7 +26,7 @@
 #include "bitVec.hpp"
 #include "rsDic.hpp"
 
-namespace ux_tool{
+namespace ux{
 
 typedef uint64_t id_t;
 
@@ -39,17 +39,17 @@ enum {
 /**
  * Succinct Trie Data structure
  */
-class UX{
+class Trie {
 public:
   /**
    * Constructor
    */
-  UX();
+  Trie();
 
   /**
    * Destructor
    */
-  ~UX();
+  ~Trie();
 
   /**
    * Build a dictionary from keyList
@@ -138,11 +138,9 @@ public:
   size_t size() const;
 
   /**
-   * Report the error message for the error ID
-   * @param error The error ID
-   * @return The error message
+   * Clear the internal state
    */
-  static std::string what(int error);
+  void clear();
   
   /*
    * Get the allocated memory size
@@ -163,6 +161,12 @@ public:
    */
   void stat(std::ostream& os) const;
 
+  /**
+   * Report the error message for the error ID
+   * @param error The error ID
+   * @return The error message
+   */
+  static std::string what(int error);
 
 private:
   void buildTailUX();
@@ -182,7 +186,7 @@ private:
   RSDic tail_;
 
   std::vector<std::string> vtails_;
-  UX* vtailux_;
+  Trie* vtailux_;
   std::vector<uint8_t> edges_;
   BitVec tailIDs_;
   size_t tailIDLen_;
