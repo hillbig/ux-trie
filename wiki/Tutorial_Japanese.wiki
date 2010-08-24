@@ -50,7 +50,7 @@ options:
 
 以下に代表的な例を示します。
 
-まず一行に一キーワードが書かれたファイルを用意します
+まず一行に一キーワードファイルを用意します
 {{{
 % head keylist
 吉祥寺
@@ -64,7 +64,7 @@ options:
 {{{
 % ux -k keylist -i index
 }}}
-これでkeylisttに対する辞書を作成し、その結果をindexに保存しました。
+これでkeylistに対する辞書を作成し、その結果をindexに保存しました。
 
 {{{
 % ux -i index
