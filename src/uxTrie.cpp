@@ -24,11 +24,11 @@
 #include <map>
 #include <cmath>
 #include <iostream>
-#include "ux.hpp"
+#include "uxTrie.hpp"
 
 using namespace std;
 
-namespace ux_tool{
+namespace ux{
 
 struct RangeNode{
   RangeNode(size_t _left, size_t _right) :
@@ -37,14 +37,15 @@ struct RangeNode{
   size_t right;
 };
   
-UX::UX() : vtailux_(NULL), tailIDLen_(0), keyNum_(0), isReady_(false) {
+Trie::Trie() : vtailux_(NULL), tailIDLen_(0), keyNum_(0), isReady_(false) {
 } 
   
-UX::~UX(){
+Trie::~Trie(){
   delete vtailux_;
 }
   
-void UX::build(vector<string>& keyList, const bool isTailUX){
+void Trie::build(vector<string>& keyList, const bool isTailUX){
+  clear();
   sort(keyList.begin(), keyList.end());
   keyList.erase(unique(keyList.begin(), keyList.end()), keyList.end());
   
@@ -139,7 +140,7 @@ void UX::build(vector<string>& keyList, const bool isTailUX){
   }
 }
   
-int UX::save(const char* fn) const {
+int Trie::save(const char* fn) const {
   ofstream ofs(fn);
   if (!ofs){
     return FILE_OPEN_ERROR;
@@ -147,7 +148,7 @@ int UX::save(const char* fn) const {
   return save(ofs);
 }
 
-int UX::load(const char* fn){
+int Trie::load(const char* fn){
   ifstream ifs(fn);
   if (!ifs){
     return FILE_OPEN_ERROR;
@@ -155,7 +156,7 @@ int UX::load(const char* fn){
   return load(ifs);
 }
   
-int UX::save(std::ostream& os) const {
+int Trie::save(std::ostream& os) const {
   loud_.save(os);
   terminal_.save(os);
   tail_.save(os);
@@ -189,7 +190,8 @@ int UX::save(std::ostream& os) const {
   return 0;
 }
 
-int UX::load(std::istream& is){
+int Trie::load(std::istream& is){
+  clear();
   loud_.load(is);
   terminal_.load(is);
   tail_.load(is);
@@ -204,7 +206,7 @@ int UX::load(std::istream& is){
   int useUX = 0;
   is.read((char*)&useUX, sizeof(useUX));
   if (useUX){
-    vtailux_ = new UX;
+    vtailux_ = new Trie;
     int err = 0;
     if ((err = vtailux_->load(is)) != 0){
       return err;
@@ -231,7 +233,7 @@ int UX::load(std::istream& is){
   return 0;
 }
   
-id_t UX::prefixSearch(const char* str, const size_t len, size_t& retLen) const{
+id_t Trie::prefixSearch(const char* str, const size_t len, size_t& retLen) const{
   vector<id_t> retIDs;
   traverse(str, len, retLen, retIDs, 0xFFFFFFFF);
   if (retIDs.size() == 0){
@@ -240,7 +242,7 @@ id_t UX::prefixSearch(const char* str, const size_t len, size_t& retLen) const{
   return retIDs.back();
 }
   
-size_t UX::commonPrefixSearch(const char* str, const size_t len, vector<id_t>& retIDs,
+size_t Trie::commonPrefixSearch(const char* str, const size_t len, vector<id_t>& retIDs,
 			      const size_t limit) const {
   retIDs.clear();
   size_t lastLen = 0;
@@ -248,7 +250,7 @@ size_t UX::commonPrefixSearch(const char* str, const size_t len, vector<id_t>& r
   return retIDs.size();
 }
   
-size_t UX::predictiveSearch(const char* str, const size_t len, vector<id_t>& retIDs, 
+size_t Trie::predictiveSearch(const char* str, const size_t len, vector<id_t>& retIDs, 
 			    const size_t limit) const{
   retIDs.clear();
   if (!isReady_) return 0;
@@ -272,7 +274,7 @@ size_t UX::predictiveSearch(const char* str, const size_t len, vector<id_t>& ret
   return retIDs.size();
 }
 
-void UX::decodeKey(const id_t id, string& ret) const{
+void Trie::decodeKey(const id_t id, string& ret) const{
   ret.clear();
   if (!isReady_) return;
   
@@ -292,17 +294,31 @@ void UX::decodeKey(const id_t id, string& ret) const{
   }
 }
   
-string UX::decodeKey(const id_t id) const {
+string Trie::decodeKey(const id_t id) const {
   std::string ret;
   decodeKey(id, ret);
   return ret;
 }
   
-size_t UX::size() const {
+size_t Trie::size() const {
   return keyNum_;
 }
+
+void Trie::clear() {
+  loud_.clear();
+  terminal_.clear();
+  tail_.clear();
+  vtails_.clear();
+  delete vtailux_;
+  vtailux_ = NULL;
+  edges_.clear();
+  tailIDs_.clear();
+  tailIDLen_ = 0;
+  keyNum_ = 0;
+  isReady_ = false;
+}
   
-std::string UX::what(const int error){
+std::string Trie::what(const int error){
   switch(error) {
   case 0:
     return string("succeeded");
@@ -317,7 +333,7 @@ std::string UX::what(const int error){
   }
 }
 
-size_t UX::getAllocSize() const{
+size_t Trie::getAllocSize() const{
   size_t retSize = 0;
   if (vtailux_) {
     retSize += vtailux_->getAllocSize();
@@ -333,7 +349,7 @@ size_t UX::getAllocSize() const{
     tail_.getAllocSize() + edges_.size();
 }
   
-void UX::allocStat(size_t allocSize, ostream& os) const{
+void Trie::allocStat(size_t allocSize, ostream& os) const{
   if (vtailux_) {
     vtailux_->allocStat(allocSize, os);
     size_t size = tailIDs_.getAllocSize();
@@ -352,7 +368,7 @@ void UX::allocStat(size_t allocSize, ostream& os) const{
   os << "    edge:\t" << edges_.size() << "\t" << (float)edges_.size() / allocSize << endl;
 }
   
-void UX::stat(ostream & os) const {
+void Trie::stat(ostream & os) const {
   size_t tailslen = 0;
   for (size_t i = 0; i < vtails_.size(); ++i){
     tailslen += vtails_[i].size();
@@ -370,10 +386,10 @@ void UX::stat(ostream & os) const {
 }
 
   
-void UX::buildTailUX(){
+void Trie::buildTailUX(){
   vector<string> origTails = vtails_;
   try {
-    vtailux_ = new UX;
+    vtailux_ = new Trie;
   } catch (bad_alloc){
     isReady_ = false;
     return;
@@ -395,7 +411,7 @@ void UX::buildTailUX(){
   vector<string>().swap(vtails_);
 }
 
-void UX::getChild(const uint8_t c, uint64_t& pos, uint64_t& zeros) const {
+void Trie::getChild(const uint8_t c, uint64_t& pos, uint64_t& zeros) const {
   for (;; ++pos, ++zeros){
     if (loud_.getBit(pos)){
       pos = NOTFOUND;
@@ -411,11 +427,11 @@ void UX::getChild(const uint8_t c, uint64_t& pos, uint64_t& zeros) const {
   }
 }
 
-bool UX::isLeaf(const uint64_t pos) const {
+bool Trie::isLeaf(const uint64_t pos) const {
   return loud_.getBit(pos);
 }
   
-void UX::getParent(uint8_t& c, uint64_t& pos, uint64_t& zeros) const {
+void Trie::getParent(uint8_t& c, uint64_t& pos, uint64_t& zeros) const {
   zeros = pos - zeros + 1;
   pos   = loud_.select(zeros, 0);
   if (zeros < 2) return;
@@ -424,7 +440,7 @@ void UX::getParent(uint8_t& c, uint64_t& pos, uint64_t& zeros) const {
 }  
   
 
-void UX::traverse(const char* str, const size_t len, 
+void Trie::traverse(const char* str, const size_t len, 
 		  size_t& lastLen, std::vector<id_t>& retIDs, const size_t limit) const{
   lastLen = 0;
   if (!isReady_) return;
@@ -455,7 +471,7 @@ void UX::traverse(const char* str, const size_t len,
 }
   
 
-void UX::enumerateAll(const uint64_t pos, const uint64_t zeros, vector<id_t>& retIDs, const size_t limit) const{
+void Trie::enumerateAll(const uint64_t pos, const uint64_t zeros, vector<id_t>& retIDs, const size_t limit) const{
   const uint64_t ones = pos - zeros;
   if (terminal_.getBit(ones)){
     retIDs.push_back(terminal_.rank(ones, 1) - 1);
@@ -470,7 +486,7 @@ void UX::enumerateAll(const uint64_t pos, const uint64_t zeros, vector<id_t>& re
   
 
 
-bool UX::tailMatch(const char* str, const size_t len, const size_t depth,
+bool Trie::tailMatch(const char* str, const size_t len, const size_t depth,
 		   const uint64_t tailID, size_t& retLen) const{
   string tail = getTail(tailID);
   if (tail.size() > len-depth) {
@@ -486,7 +502,7 @@ bool UX::tailMatch(const char* str, const size_t len, const size_t depth,
   return true;
 }
   
-std::string UX::getTail(const uint64_t i) const{
+std::string Trie::getTail(const uint64_t i) const{
   if (vtailux_) {
     string ret;
     vtailux_->decodeKey(tailIDs_.getBits(tailIDLen_ * i, tailIDLen_), ret);

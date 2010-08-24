@@ -19,7 +19,7 @@
 
 #include "uxUtil.hpp"
 
-namespace ux_tool{
+namespace ux{
 
 uint64_t lg2(const uint64_t x){
   uint64_t ret = 0;

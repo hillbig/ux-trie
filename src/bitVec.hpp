@@ -25,7 +25,7 @@
 #include <iostream>
 #include "uxUtil.hpp"
 
-namespace ux_tool {
+namespace ux {
 
 static const uint64_t L_SHIFT = 9;
 static const uint64_t L_BLOCK = 1LLU << L_SHIFT;
@@ -47,6 +47,7 @@ public:
   void save(std::ostream& os) const;
   void load(std::istream& is);
   size_t size() const;
+  void clear();
   void print() const;
   size_t getAllocSize() const;
   uint64_t lookupBlock(const size_t ind) const;

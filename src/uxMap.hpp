@@ -25,33 +25,33 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include "ux.hpp"
+#include "uxTrie.hpp"
 
-namespace ux_tool{
+namespace ux{
 
 /**
  * Succict Map using UX
  */
 template <class V>
-class UXMap{
+class Map{
 public:
   /**
    * Constructor
    */
-  UXMap() : size_(0){}
+  Map() : size_(0){}
 
   /**
    * Destructor
    */
-  ~UXMap() {}
+  ~Map() {}
 
   /**
    * Build a map without keys
    * @param keys keys to be associated
    */
   void build(std::vector<std::string>& keys){
-    ux_.build(keys);
-    vs_.resize(ux_.size());
+    trie_.build(keys);
+    vs_.resize(trie_.size());
   }
   
   /**
@@ -64,7 +64,7 @@ public:
 	   m.begin(); it != m.end(); ++it){
       wordList.push_back(it->first);
     }
-    ux_.build(wordList);
+    trie_.build(wordList);
     vs_.resize(wordList.size());
     for (typename std::map<std::string, V>::const_iterator it = 
 	   m.begin(); it != m.end(); ++it){
@@ -85,7 +85,7 @@ public:
       wordList.push_back(kvs[i].first);
     }
 
-    ux_.build(wordList);
+    trie_.build(wordList);
     vs_.resize(wordList.size());
 
     for (size_t i = 0; i < kvs.size(); ++i){
@@ -103,7 +103,7 @@ public:
    */
   int get(const char* str, size_t len, V& v) const {
     size_t retLen = 0;
-    id_t id = ux_.prefixSearch(str, len, retLen);
+    id_t id = trie_.prefixSearch(str, len, retLen);
     if (id == NOTFOUND){
       return -1;
     } 
@@ -120,7 +120,7 @@ public:
    */
   int set(const char* str, size_t len, const V& v){
     size_t retLen = 0;
-    id_t id = ux_.prefixSearch(str, len, retLen);
+    id_t id = trie_.prefixSearch(str, len, retLen);
     if (id == NOTFOUND){
       return -1;
     }
@@ -137,7 +137,7 @@ public:
    * @return 0 if found and -1 if not found
    */
   int prefixSearch(const char* str, size_t len, size_t& retLen, V& v) const {
-    id_t id = ux_.prefixSearch(str, len, retLen);
+    id_t id = trie_.prefixSearch(str, len, retLen);
     if (id == NOTFOUND){
       return -1;
     }
@@ -188,7 +188,7 @@ public:
    * @param ret The key for the given ID or empty if such ID does not exist
    */ 
   void decodeKey(const size_t ind, std::string& ret) const {
-    ux_.decodeKey(ind, ret);
+    trie_.decodeKey(ind, ret);
   }
 
   /**
@@ -196,11 +196,11 @@ public:
    * @return the number of keys
    */
   size_t size() const {
-    return ux_.size();
+    return trie_.size();
   }
 
 private:
-  UX ux_;
+  Trie trie_;
   std::vector<V> vs_;
   size_t size_;
 };
@@ -209,4 +209,4 @@ private:
 }
 
 
-#endif // UX_MAP_HPP__
+#endif // TRIE_MAP_HPP__

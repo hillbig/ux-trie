@@ -16,13 +16,13 @@ def configure(ctx):
 def build(bld):
   bld(
        features     = 'cxx cshlib',
-       source       = 'ux.cpp bitVec.cpp rsDic.cpp uxUtil.cpp uxMap.cpp',
+       source       = 'uxTrie.cpp bitVec.cpp rsDic.cpp uxUtil.cpp uxMap.cpp',
        name         = 'ux',
        target       = 'ux',
        includes     = '.')
   bld(
        features     = 'cxx cstaticlib',
-       source       = 'ux.cpp bitVec.cpp rsDic.cpp uxUtil.cpp uxMap.cpp',
+       source       = 'uxTrie.cpp bitVec.cpp rsDic.cpp uxUtil.cpp uxMap.cpp',
        name         = 'ux',
        target       = 'ux',
        includes     = '.')
