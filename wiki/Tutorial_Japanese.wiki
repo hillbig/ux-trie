@@ -8,7 +8,7 @@ Trieはキー集合に対する処理を効率的に行うことができるデ�
 
 == txからの相違点 ==
 
-uxは[http://code.google.com/p/tx-trie/|tx]の後継のライブラリです．
+uxは[http://code.google.com/p/tx-trie/ tx]の後継のライブラリです．
 txからの相違点は以下のとおりです。
 
  * 構築時にファイルを作成する必要が無い
