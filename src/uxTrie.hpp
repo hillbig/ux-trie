@@ -198,14 +198,15 @@ public:
    * Error code.
    */
   enum {
+    SUCCESS          = 0, 
     FILE_OPEN_ERROR  = 1,
     FILE_WRITE_ERROR = 2,
     FILE_READ_ERROR  = 3,
     SAVE_ERROR       = 4,
     LOAD_ERROR       = 5
   };
-
 };
+
 
 }
 

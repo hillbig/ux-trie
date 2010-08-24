@@ -112,7 +112,6 @@ def exec_test(self):
 
     testlock.acquire()
     try:
-        Logs.debug("ut: %r",tup)
         try:
             self.generator.bld.utest_results.append(tup)
         except:

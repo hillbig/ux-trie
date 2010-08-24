@@ -133,7 +133,7 @@ int buildUX(const string& fn, const string& index, const bool uncompress, const 
 
   if (index == "") return 0;
   int err = ux.save(index.c_str());
-  if (err != 0){
+  if (err != ux::Trie::SUCCESS){
     cerr << ux.what(err) << " " << index << endl;
     return -1;
   }
@@ -142,8 +142,8 @@ int buildUX(const string& fn, const string& index, const bool uncompress, const 
 
 int searchUX(const string& index, const int limit){
   ux::Trie ux;
-  int err = 0;
-  if ((err = ux.load(index.c_str())) != 0){
+  int err = ux.load(index.c_str());
+  if (err != ux::Trie::SUCCESS){ 
     cerr << ux.what(err) << " " << index << endl;
     return -1;
   }
@@ -164,8 +164,8 @@ int searchUX(const string& index, const int limit){
 
 int listUX(const string& index){
   ux::Trie ux;
-  int err = 0;
-  if ((err = ux.load(index.c_str())) != 0){
+  int err = ux.load(index.c_str());
+  if (err != ux::Trie::SUCCESS){
     cerr << ux.what(err) << " " << index << endl;
     return -1;
   }
