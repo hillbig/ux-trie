@@ -17,8 +17,8 @@
  *      software without specific prior written permission.
  */
 
-#ifndef UX_HPP__
-#define UX_HPP__
+#ifndef UX_TRIE_HPP__
+#define UX_TRIE_HPP__
 
 #include <string>
 #include <vector>
@@ -209,4 +209,4 @@ public:
 
 }
 
-#endif // UX_HPP__
+#endif // UX_TRIE_HPP__
