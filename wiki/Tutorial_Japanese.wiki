@@ -103,9 +103,6 @@ ux/ux.hppをインクルードし、uxライブラリを読み込みます。
 ux::Trieはtrieデータ構造であり、キー集合を管理し、それらに対する操作を実現します。
 ux::Mapは連想配列であり、キーを介して値を操作できます．内部ではux::Trieを利用しています。
 
-具体的なAPIについては[http://code.google.com/p/ux-trie/source/browse/trunk/src/uxTrie.hpp uxTrie.hpp] [http://code.google.com/p/ux-trie/source/browse/trunk/src/uxMap.hpp uxMap.hpp]を参照してください
-
-以下では基本的な使用方法についてサンプルコードを通じて説明します。
 
 {{{
 #include <ux/ux.hpp>
@@ -141,3 +138,9 @@ if (anotherTrie.load("index") != ux::UX::SUCCESS){
 }
 
 }}}
+
+== C++ API ==
+
+具体的なAPIについては以下のヘッダファイルを参照してください。
+ * [http://code.google.com/p/ux-trie/source/browse/trunk/src/uxTrie.hpp uxTrie.hpp] 
+ * [http://code.google.com/p/ux-trie/source/browse/trunk/src/uxMap.hpp uxMap.hpp]
