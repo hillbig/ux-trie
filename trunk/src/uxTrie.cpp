@@ -216,7 +216,7 @@ int Trie::load(std::istream& is){
       return err;
     }
     size_t tailNum = vtailux_->size();
-    tailIDLen_ = log2(tailNum); 
+    tailIDLen_ = lg2(tailNum); 
     
   } else {
     size_t tailsNum  = 0;
@@ -402,7 +402,7 @@ void Trie::buildTailUX(){
     reverse(vtails_[i].begin(), vtails_[i].end());
   }
   vtailux_->build(vtails_, false);
-  tailIDLen_ = log2(vtailux_->size());
+  tailIDLen_ = lg2(vtailux_->size());
   
   for (size_t i = 0; i < origTails.size(); ++i){
     size_t retLen = 0;
