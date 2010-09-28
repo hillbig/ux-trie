@@ -47,6 +47,13 @@ public:
   Trie();
 
   /**
+   * Constructor 
+   * @param keyList input key list
+   * @param isTailUX use tail compression. 
+   */
+  Trie(std::vector<std::string>& keyList, bool isTailUX = true);
+
+  /**
    * Destructor
    */
   ~Trie();

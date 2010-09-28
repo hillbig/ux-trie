@@ -17,16 +17,16 @@ double gettimeofday_sec()
   return tv.tv_sec + (double)tv.tv_usec*1e-6;
 }
 
-void analyzeWordList(const vector<string>& wordList){
+void analyzeKeyList(const vector<string>& keyList){
   size_t lcs = 0;
-  for (size_t i = 1; i < wordList.size(); ++i){
-    const string& s1 = wordList[i-1];
-    const string& s2 = wordList[i];
+  for (size_t i = 1; i < keyList.size(); ++i){
+    const string& s1 = keyList[i-1];
+    const string& s2 = keyList[i];
     size_t j = 0;
     for (; j < s1.size() && j < s2.size() && s1[j] == s2[j]; ++j) {};
     lcs += j;
   }
-  cout << "  avelcs:\t" << (float)lcs / wordList.size() << endl;
+  cout << "  avelcs:\t" << (float)lcs / keyList.size() << endl;
 }
 
 
@@ -41,7 +41,7 @@ size_t allKeySize(const vector<string>& keyList){
 void reportStat(const ux::Trie& ux, const vector<string>& keyList){
   ux.allocStat(ux.getAllocSize(), cout);
   ux.stat(cout);
-  analyzeWordList(keyList);
+  analyzeKeyList(keyList);
   size_t originalSize = allKeySize(keyList);
   cout << "originalSize:\t" << allKeySize(keyList) << endl
        << "   indexSize:\t" << ux.getAllocSize() << " (" << (float)ux.getAllocSize() / originalSize << ")" << endl
@@ -87,12 +87,12 @@ int readKeyList(const string& fn, vector<string>& keyList){
     return -1;
   }
 
-  for (string word; getline(ifs, word); ){
-    if (word.size() > 0 &&
-	word[word.size()-1] == '\r'){
-      word = word.substr(0, word.size()-1);
+  for (string key; getline(ifs, key); ){
+    if (key.size() > 0 &&
+	key[key.size()-1] == '\r'){
+      key = key.substr(0, key.size()-1);
     }
-    keyList.push_back(word);
+    keyList.push_back(key);
   }
   return 0;
 } 
@@ -169,10 +169,9 @@ int listUX(const string& index){
     cerr << ux.what(err) << " " << index << endl;
     return -1;
   }
-  cerr << "read:" << ux.size() << " keys" << endl;
   
   for (size_t i = 0; i < ux.size(); ++i){
-    cout << "[" << ux.decodeKey(i) << "]" <<  endl;
+    cout << ux.decodeKey(i) <<  endl;
   }
   return 0;
 }
@@ -180,11 +179,11 @@ int listUX(const string& index){
 
 int main(int argc, char* argv[]){
   cmdline::parser p;
-  p.add<string>("wordlist",   'w', "word list", false);
+  p.add<string>("keylist",    'k', "key list", false);
   p.add<string>("index",      'i', "index",     true);
   p.add<int>   ("limit",      'l', "limit at search", false, 10);
   p.add        ("uncompress", 'u', "tail is uncompressed");
-  p.add        ("enumerate",  'e', "enumerate all keyword");
+  p.add        ("enumerate",  'e', "enumerate all keywords");
   p.add<int>   ("verbose",    'v', "verbose mode", 0);
   p.add("help", 'h', "this message");
   p.set_program_name("ux");
@@ -194,8 +193,8 @@ int main(int argc, char* argv[]){
     return -1;
   }
 
-  if (p.exist("wordlist")){
-    return buildUX(p.get<string>("wordlist"), p.get<string>("index"), p.exist("uncompress"), p.get<int>("verbose"));
+  if (p.exist("keylist")){
+    return buildUX(p.get<string>("keylist"), p.get<string>("index"), p.exist("uncompress"), p.get<int>("verbose"));
   } else if (p.exist("enumerate")){
     return listUX(p.get<string>("index"));
   } else {
