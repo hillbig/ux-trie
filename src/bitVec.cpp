@@ -50,7 +50,7 @@ void BitVec::push_back_with_len(const uint64_t x, const uint64_t len){
   }
 
   B_[size_ / S_BLOCK] |= (x << offset);
-  if (offset + len - 1 > S_BLOCK){
+  if (offset + len - 1 >= S_BLOCK){
     B_[size_ / S_BLOCK + 1] |= (x >> (S_BLOCK - offset));
   } 
   size_ += len;
