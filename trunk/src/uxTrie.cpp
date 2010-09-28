@@ -39,6 +39,10 @@ struct RangeNode{
   
 Trie::Trie() : vtailux_(NULL), tailIDLen_(0), keyNum_(0), isReady_(false) {
 } 
+
+Trie::Trie(vector<string>& keyList, const bool isTailUX) : vtailux_(NULL), tailIDLen_(0), keyNum_(0), isReady_(false) {
+  build(keyList, isTailUX);
+} 
   
 Trie::~Trie(){
   delete vtailux_;
