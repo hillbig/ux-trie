@@ -1,7 +1,8 @@
-VERSION = '0.0.6'
+VERSION = '0.1.0'
 APPNAME = 'ux'
 
 srcdir = '.'
+blddir = 'build'
 
 def set_options(ctx):
   ctx.tool_options('compiler_cxx')
@@ -14,3 +15,8 @@ def configure(ctx):
 
 def build(bld):
   bld.recurse('src')
+
+def dist_hook():
+  import os
+  os.remove('upload.sh')
+  os.remove('googlecode_upload.py')

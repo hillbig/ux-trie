@@ -46,7 +46,7 @@ public:
   ~Map() {}
 
   /**
-   * Build a map without keys
+   * Build a map without values
    * @param keys keys to be associated
    */
   void build(std::vector<std::string>& keys){
