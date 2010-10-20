@@ -148,3 +148,7 @@ if (anotherTrie.load("index") != ux::UX::SUCCESS){
 具体的なAPIについては以下のヘッダファイルを参照してください。
  * [http://code.google.com/p/ux-trie/source/browse/trunk/src/uxTrie.hpp uxTrie.hpp] 
  * [http://code.google.com/p/ux-trie/source/browse/trunk/src/uxMap.hpp uxMap.hpp]
+
+== 謝辞 ==
+
+tkngさんにpkgconfig対応をしていただきました。ありがとうございます。
