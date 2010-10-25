@@ -108,6 +108,7 @@ void performanceTest(ux::Trie& ux, vector<string>& keyList){
   }
   double end   = gettimeofday_sec();
   cout << "  query time:\t" << end - start << endl; 
+  cout << "  check keys:\t" << min((int)keyList.size(), 1000) << endl;
   
   if (dummy == 777){
     cerr << "luckey" << endl;
