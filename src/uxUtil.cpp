@@ -49,24 +49,38 @@ uint64_t popCountMasked(uint64_t x, uint64_t pos){
   return popCount(mask(x, pos));
 }
 
-uint64_t selectBlock(uint64_t pos, uint64_t block, uint8_t b) {
-  uint64_t ret = 0;
-  for (uint64_t t = 32; t >= 8 && pos >= 0; t /= 2){
-    uint64_t rankVal = getBitNum(popCountMasked(block, t), t, b);
-    if (rankVal >= pos) break;
-    block >>= t;
-    ret += t;
-    pos -= rankVal;
+uint64_t selectBlock(uint64_t r, uint64_t x, uint8_t b) {
+  if (!b) x = ~x;
+  uint64_t x1 = x - ((x & 0xAAAAAAAAAAAAAAAALLU) >> 1);
+  uint64_t x2 = (x1 & 0x3333333333333333LLU) + ((x1 >> 2) & 0x3333333333333333LLU);
+  uint64_t x3 = (x2 + (x2 >> 4)) & 0x0F0F0F0F0F0F0F0FLLU;
+  
+  uint64_t pos = 0;
+  for (;;  pos += 8){
+    uint64_t b = (x3 >> pos) & 0xFFLLU;
+    if (r <= b) break;
+    r -= b;
   }
 
-  while (pos > 0){
-    if ((block & 1LLU) == b){
-      pos--;
-    }
-    block >>= 1;
-    ret++;
+  uint64_t v2 = (x2 >> pos) & 0xFLLU;
+  if (r > v2) {
+    r -= v2;
+    pos += 4;
   }
-  return ret-1;
+
+  uint64_t v1 = (x1 >> pos) & 0x3LLU;
+  if (r > v1){
+    r -= v1;
+    pos += 2;
+  }
+
+  uint64_t v0  = (x >> pos) & 0x1LLU;
+  if (v0 < r){
+    r -= v0;
+    pos += 1;
+  }
+
+  return pos;
 }
 
 uint64_t getBitNum(uint64_t oneNum, uint64_t num, uint8_t bit){
