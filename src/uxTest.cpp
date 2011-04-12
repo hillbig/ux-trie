@@ -153,7 +153,18 @@ TEST(ux, predictiveSearch){
   ASSERT_EQ("beppu", ux.decodeKey(retIDs[2]));
 }
 
+TEST(ux, predictiveSearch2){
+  ux::Trie ux;
+  vector<string> wordList;
+  wordList.push_back("東京都");
+  ux.build(wordList);
 
+  vector<ux::id_t> retIDs;
+  string q1 = "東";
+  ASSERT_EQ(1, ux.predictiveSearch(q1.c_str(), q1.size(), retIDs));
+  ASSERT_EQ(1, retIDs.size());
+}
+  
 TEST(ux, save){
   const char* fn = "uxTestSave.ind";
   ux::Trie ux;
