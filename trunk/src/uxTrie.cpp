@@ -265,6 +265,19 @@ size_t Trie::predictiveSearch(const char* str, const size_t len, vector<id_t>& r
   uint64_t pos       = 2;
   uint64_t zeros     = 2;
   for (size_t i = 0; i < len; ++i){
+    uint64_t ones = pos - zeros;
+    
+    if (tail_.getBit(ones)){
+      uint64_t tailID = tail_.rank(ones, 1) - 1;
+      string tail = getTail(tailID);
+      for (size_t j = i; j < len; ++j){
+	if (str[j] != tail[j-i]){
+	  return 0;
+	}
+      }
+      retIDs.push_back(terminal_.rank(ones, 1) - 1);
+      return retIDs.size();
+    }
     lastPos   = pos;
     lastZeros = zeros;
     getChild((uint8_t)str[i], pos, zeros);
