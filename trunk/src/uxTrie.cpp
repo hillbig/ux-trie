@@ -145,7 +145,7 @@ void Trie::build(vector<string>& keyList, const bool isTailUX){
 }
   
 int Trie::save(const char* fn) const {
-  ofstream ofs(fn);
+  ofstream ofs(fn, ios::binary);
   if (!ofs){
     return FILE_OPEN_ERROR;
   }
@@ -153,7 +153,7 @@ int Trie::save(const char* fn) const {
 }
 
 int Trie::load(const char* fn){
-  ifstream ifs(fn);
+  ifstream ifs(fn, ios::binary);
   if (!ifs){
     return FILE_OPEN_ERROR;
   }
