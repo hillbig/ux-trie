@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-VERSION = '0.1.3'
+VERSION = '0.1.4'
 APPNAME = 'ux'
 
 srcdir = '.'
