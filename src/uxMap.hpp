@@ -141,7 +141,8 @@ public:
     if (id == NOTFOUND){
       return -1;
     }
-    return vs_[id];
+    v = vs_[id];
+    return 0;
   }
 
   /** 
