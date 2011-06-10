@@ -215,5 +215,14 @@ TEST(ux, large){
   ASSERT_EQ(dic.size(), trie.size());
 }
 
-
-
+TEST(ux, predictiveTest){
+  vector<string> str;
+  str.push_back("xx");
+  str.push_back("xxy");
+  str.push_back("xxxz");
+  ux::Trie trie(str);
+  
+  vector<ux::id_t> v;
+  string q = "xxy";
+  ASSERT_EQ(1, trie.predictiveSearch(q.c_str(), q.size(), v));
+}  
