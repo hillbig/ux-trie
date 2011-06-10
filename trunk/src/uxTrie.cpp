@@ -23,7 +23,6 @@
 #include <cassert>
 #include <map>
 #include <cmath>
-#include <iostream>
 #include "uxTrie.hpp"
 
 using namespace std;
@@ -260,8 +259,6 @@ size_t Trie::predictiveSearch(const char* str, const size_t len, vector<id_t>& r
   if (!isReady_) return 0;
   if (limit == 0) return 0;
   
-  uint64_t lastPos   = 0;
-  uint64_t lastZeros = 0;
   uint64_t pos       = 2;
   uint64_t zeros     = 2;
   for (size_t i = 0; i < len; ++i){
@@ -276,10 +273,9 @@ size_t Trie::predictiveSearch(const char* str, const size_t len, vector<id_t>& r
 	}
       }
       retIDs.push_back(terminal_.rank(ones, 1) - 1);
+
       return retIDs.size();
     }
-    lastPos   = pos;
-    lastZeros = zeros;
     getChild((uint8_t)str[i], pos, zeros);
     if (pos == NOTFOUND){
       return 0;
@@ -287,7 +283,7 @@ size_t Trie::predictiveSearch(const char* str, const size_t len, vector<id_t>& r
   }
   
   // search all descendant nodes from curPos
-  enumerateAll(lastPos, lastZeros, retIDs, limit);
+  enumerateAll(pos, zeros, retIDs, limit);
   return retIDs.size();
 }
 
