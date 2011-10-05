@@ -226,3 +226,4 @@ TEST(ux, predictiveTest){
   string q = "xxy";
   ASSERT_EQ(1, trie.predictiveSearch(q.c_str(), q.size(), v));
 }  
+

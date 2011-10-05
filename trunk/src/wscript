@@ -1,57 +1,43 @@
 APPNAME= 'ux'
 
-srcdir= '.'
-blddir= 'bin'
+top = '.'
+out = 'bin'
 
-def set_options(ctx):
-  ctx.tool_options('compiler_cxx')
-  ctx.tool_options('unittestt')
+def options(ctx):
+  pass
     
 def configure(ctx):
-  ctx.check_tool('compiler_cxx')
-  ctx.check_tool('unittestt')  
-  ctx.env.CXXFLAGS += ['-O2', '-Wall', '-g']
+  pass
 
 def build(bld):
-  bld(
-       features     = 'cxx cshlib',
+  bld.shlib(
        source       = 'uxTrie.cpp bitVec.cpp rsDic.cpp uxUtil.cpp uxMap.cpp',
-       name         = 'ux',
        target       = 'ux',
+       name         = 'UX',
        includes     = '.')
-  bld(
-       features     = 'cxx cstaticlib',
-       source       = 'uxTrie.cpp bitVec.cpp rsDic.cpp uxUtil.cpp uxMap.cpp',
-       name         = 'ux',
-       target       = 'ux',
-       includes     = '.')
-  bld(
-       features     = 'cxx cprogram',
+  bld.program(
        source       = 'uxMain.cpp',
        target       = 'ux',
        includes     = '.',
-       uselib_local = 'ux')
-  bld(
-       features     = 'cxx cprogram gtest',
+       use          = 'UX')
+  bld.program(
+       features     = 'gtest',
        source       = 'uxTest.cpp',
        target       = 'ux_test',
-       uselib_local = 'ux' ,
-       uselib       = '',
+       use          = 'UX' ,
        includes     = '.')
-  bld(
-       features     = 'cxx cprogram gtest',
+  bld.program(
+       features     = 'gtest',
        source       = 'bitVecTest.cpp',
        target       = 'bitvec_test',
-       uselib_local = 'ux' ,
-       uselib       = '',
+       use          = 'UX',
        includes     = '.')
 
-  bld(
-       features     = 'cxx cprogram gtest',
+  bld.program(
+       features     = 'gtest',
        source       = 'uxMapTest.cpp',
        target       = 'uxmap_test',
-       uselib_local = 'ux' ,
-       uselib       = '',
+       use          = 'UX',
        includes     = '.')
 
   bld.install_files('${PREFIX}/include/ux', bld.path.ant_glob('*.hpp'))
