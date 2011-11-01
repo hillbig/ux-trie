@@ -110,3 +110,30 @@ TEST(uxmap, map){
     ASSERT_EQ(it->second, ret);
   }
 }
+
+TEST(uxmap, save){
+  map<string, int> kvs;
+  kvs[string("i")] = 1;
+  kvs[string("in")] = 2;
+  kvs[string("to")] = 3;
+  kvs[string("we")] = 4;
+  kvs[string("inn")] = 5;
+  kvs[string("tea")] = 6;
+  kvs[string("ten")] = 7;
+  
+  ux::Map<int> uxm;
+  uxm.build(kvs);
+
+  ostringstream os;
+  ASSERT_EQ(0, uxm.save(os));
+  istringstream is(os.str());
+  ux::Map<int> uxm_load;
+  ASSERT_EQ(0, uxm_load.load(is));
+  for (map<string, int>::const_iterator it = kvs.begin();
+       it != kvs.end(); ++it){
+    string key = it->first;
+    int ret = -1;
+    ASSERT_EQ(0, uxm_load.get(key.c_str(), key.size(), ret));
+    ASSERT_EQ(it->second, ret);
+  }
+}

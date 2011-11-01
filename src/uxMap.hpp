@@ -193,6 +193,41 @@ public:
   }
 
   /**
+   * Save the map in ostream
+   * @param os The ostream as an output 
+   * @return 0 on success, -1 on failure
+   */
+  int save(std::ostream& os) const {
+    trie_.save(os);
+    size_t vsSize = vs_.size();
+    os.write((const char*)&vsSize, sizeof(vsSize));
+    os.write((const char*)&vs_[0], sizeof(vs_[0]) * vs_.size());
+    if (!os){
+      return -1;
+    } else {
+      return 0;
+    }
+  }
+
+  /**
+   * Load the map from istream
+   * @param is The istream as an input
+   * @return 0 on success, -1 on failure
+   */
+  int load(std::istream& is){
+    trie_.load(is);
+    size_t vsSize = 0;
+    is.read((char*)&vsSize, sizeof(vsSize));
+    vs_.resize(vsSize);
+    is.read((char*)&vs_[0], sizeof(vs_[0]) * vs_.size());
+    if (!is){
+      return -1;
+    } else {
+      return 0;
+    }
+  }
+
+  /**
    * Get the number of keys 
    * @return the number of keys
    */
